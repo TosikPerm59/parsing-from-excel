@@ -45,3 +45,26 @@ for elem in giis_dict.values():
     print(elem)
 
 
+def check_number(str_check):
+    true_lst = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    for i in str_check:
+        if i not in true_lst:
+            return False
+    else:
+        return True
+
+
+def check_description(self, description):
+    description_lst = description.split(' ')
+    desc_dict = {}
+    for elem in description_lst:
+        if len(elem) == 13:
+            if check_number(elem):
+                self.values[id] = elem
+        if elem == 'Арт.' or elem == 'арт.':
+            self[artic] = (description_lst[(description_lst.index(elem)) + 1].split(','))[0]
+    return desc_dict
+
+
+
+print(check_description('Арт. 018181-1102, р. 17,5, вставки - 21 Фианит Кр 1,00 0,036 Бесцветный 9115017603784'))
