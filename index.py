@@ -3,11 +3,7 @@
 в накладных созданных платформой КонтурМаркет. Программа возвращает позиции которые встречаются одновременно,
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК.
 """
-
-import reportСreator
-import giisParser
-import dirParser
-import matchСhecker
+from servise_files import reportСreator, giisParser, dirParser, matchСhecker
 
 print('\n', 'Вас приветствует мастер проверки Excel файлов содержащих сведения платформы ГИИС ДМДК.', '\n')
 
