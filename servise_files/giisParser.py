@@ -54,6 +54,7 @@ def giis_file_parsing(path_to_giis_file):
         for elem in args:
             elem = str(elem).split(' ')
 
+            # Поиск артикула по разным критериям
             for pos in range(len(elem)):
                 if elem[pos] in prefixes:
                     return elem[pos] + ' ' + elem[pos + 1]
@@ -81,6 +82,10 @@ def giis_file_parsing(path_to_giis_file):
           Возвращает описание позиции, если оно найдено или 0. """
 
         description = ''
+        keywords = {'цепь': ['цб', 'нц', 'ци'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
+        keywords_weaving = {'перлина': ['шариковая', 'перлина'], 'сингапур': ['сингапур'], 'нонна': ['нонна'],
+                            'якорь': ['якорь', 'якорное'], 'бисмарк': ['бисмарк'], 'фигаро': ['фигаро', 'картье'],
+                            'снэйк': ['снэйк', 'снейк', 'кобра'], 'ромб': ['ромб'], 'love': ['love', 'лав', 'сердечки']}
         keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона']
         keywords_inserts = {'аметистом': 'с аметистом', 'топазом': 'с топазом', 'аметрином': 'с аметрином',
                             'празолитом': 'с празолитом', 'агатом': 'с агатом', 'гранатом':'с гранатом',
@@ -89,27 +94,56 @@ def giis_file_parsing(path_to_giis_file):
         for elem in args[:2]:
             elem = str(elem)
 
+            # Применение имени изделия в описание, при нахождении ключевых слов
             if description == '':
                 for keyword in keywords_name:
+
                     if keyword in elem.lower():
                         description = keyword.capitalize() + ' ' + args[2].capitalize() + ' ' + args[3]
+                        continue
+
+                # Применение имени изделия в описание, при нахождении префиксов в строках.
+                for part in elem.split(' '):
+                    if description == '':
+                        for key, value in keywords.items():
+                            if description == '':
+                                if part.lower() in value:
+                                    description = key.capitalize() + ' ' + args[2].capitalize() + ' ' + args[3]
+                    else:
                         break
 
-            elif len(description.split()) == 3:
+            #  Поиск вставок в изделия
+            if len(description.split()) >= 3:
                 for key in keywords_inserts.keys():
+
                     if key in elem:
                         description = description + ' ' + keywords_inserts[key]
 
                 split_element = elem.split(' ')
+
+                # Поиск размера для колец
                 if 'р.' in elem:
                     size = str(split_element[(split_element.index('р.') + 1)][:-1])
                     description = description + ',' + ' р-р ' + size
 
+                # Поиск длины изделия для цепей и браслетов
+                for _string in split_element:
+                    if _string.startswith('l-'):
+                        description = description + ', ' + _string
+
+                # Поиск названия плетения для цепей и браслетов
+                for key, values in keywords_weaving.items():
+                    for value in values:
+
+                        if value in elem.lower():
+                            description = description + ', плетение - ' + key
+
         return description
 
-    for row in range(1, sheet.max_row + 1):  # Выполняется построчный проход по таблице
-    # for row in range(50, 58): #  Test
-        # print(f'строка № {sheet[row][0].value}, описание {sheet[row][2].value}, {sheet[row][3].value}')
+    # Выполняется построчный проход по таблице
+    for row in range(1, sheet.max_row + 1):
+    # for row in range(15, 18): #  Test variant
+
         giis_dict[sheet[row][0].value] = {
             'uin': sheet[row][1].value if sheet[row][1].value.isdigit() and len(sheet[row][1].value) == 16 else 0,
             'id': find_ID(sheet[row][2].value, sheet[row][3].value),
@@ -120,9 +154,12 @@ def giis_file_parsing(path_to_giis_file):
             'Металл': sheet[row][5].value + ' ' + sheet[row][7].value + ' пробы'
         }
 
-    print(*((key, value) for key, value in giis_dict.items()), sep='\n')
+    return giis_dict
 
+    # Вывод на экран получившегося словаря построчно
+    # print(*((key, value) for key, value in giis_dict.items()), sep='\n')
 
+# Testing
 # giis_file_parsing(r"E:\Elena\Downloads\batches_list (1).xlsx")  # True example
 # giis_file_parsing(r"E:\Elena\Downloads\batches_list (1) — копия.xlsx")  # False example
-giis_file_parsing(r"E:\Elena\Downloads\batches_list (2).xlsx")  # True example
+# giis_file_parsing(r"E:\Elena\Downloads\batches_list (2).xlsx")  # True example
