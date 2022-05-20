@@ -10,10 +10,10 @@ path_to_giis_file = input('Укажите путь к файлу, содержа
 
 print()
 
-path_to_invoices = input('Укажите директорию проверяемых файлов Excel: ')
+path_to_invoices = input('Укажите директорию проверяемых накладных: ')
 
 # Парсинг файла Excel, созданого платформой ГИИС ДМДК
-normalized_giis_dict = giisParser.giis_file_parsing(path_to_giis_file)
+giis_dict = giisParser.giis_file_parsing(path_to_giis_file)
 
 # Парсинг, анализ и помещение в список накладных созданных КонтурМаркетом
 normalized_invoices = dirParser.directory_parsing(path_to_invoices)
@@ -22,7 +22,7 @@ report_list = []
 
 # Проверка на совпадение позиций
 for invoice in normalized_invoices:
-    report = matchСhecker.match_checking(normalized_giis_dict, invoice)
+    report = matchСhecker.match_checking(giis_dict, invoice)
 
     report_list.append(report)
 
