@@ -1,7 +1,23 @@
 import openpyxl
 import warnings
+from os import path
+from handlerFunctions import find_art, find_description, find_weight
+import handlerFunctions
 
 warnings.simplefilter("ignore")
+
+
+def find_id(*description):
+
+    """ Функция ищет в описании и наименовании позиции, строку состоящую из 13 символов и состоящую
+    только из цифр.
+        Возвращает строку или None """
+
+    for elem in description:
+        elem = str(elem)
+        for part in elem.split(' '):
+            if len(part) == 13 and part.isdigit():
+                return part
 
 
 def giis_file_parsing(path_to_giis_file):
@@ -13,151 +29,39 @@ def giis_file_parsing(path_to_giis_file):
     и анализируя данные принимает решение о помещении этих данных соответствующим ключам словаря принадлежащего
     текущей позиции.
       Функция возвращает словарь с позициями в которых все характеристики упорядочены и проверены. """
-
-    file_giis = openpyxl.open(path_to_giis_file)
-
+    path_to_giis_file = path_to_giis_file.replace('"', '')
+    file_giis = openpyxl.open(path_to_giis_file, keep_vba=False)
+    giis_list = []
     sheet = file_giis.active
     sheet.delete_rows(1, 3)
-    giis_dict = {}
-
-    def find_ID(*description):
-
-        """ Функция ищет в описании и наименовании позиции, строку состоящую из 13 символов и состоящую
-        только из цифр.
-          Возвращает строку, если она найдена, либо 0. """
-
-        for elem in description:
-            elem = str(elem)
-            for part in elem.split(' '):
-                if len(part) == 13 and part.isdigit():
-                    return part
-
-    def find_art(*args):
-
-        """ Функция анализирует столбцы Описание и Наименование, находит и проверяет артикул позиции
-          Возвращает артикул, если он найден или 0. """
-
-        prefixes = ['НЦ', 'ЦБ', 'ЦИ', 'ББ', 'БВ', 'БИ', 'БК', 'НБ']
-        word_exceptions = ['585-й', '925-й', '0070', '585']
-
-        def word_exceptions_check(_string):
-
-            """ Функция проверяет наличие слов исключений в передаваемой строке.
-            Возвращает False в случае наличия слов исключений в строке или True при отсутствии """
-
-            for exception in word_exceptions:
-                if exception in _string:
-                    return False
-            else:
-                return True
-
-        for elem in args:
-            elem = str(elem).split(' ')
-
-            # Поиск артикула по разным критериям
-            for pos in range(len(elem)):
-                if elem[pos] in prefixes:
-                    return elem[pos] + ' ' + elem[pos + 1]
-
-                elif elem[pos] == 'Арт.':
-                    return elem[pos + 1]
-
-                elif 'перлина' in elem[pos]:
-                    elem_lst = list(elem[pos])
-                    for simbol in 'перлина':
-                        elem_lst.remove(simbol)
-                    return ''.join(elem_lst)
-
-                elif ((elem[pos].isdigit() or elem[pos].isalnum()) and 2 < len(elem[pos]) != 13 and
-                      not elem[pos].isalpha() and word_exceptions_check(elem[pos])):
-                    return elem[pos]
-
-                elif ('-' in elem[pos] or '_' in elem) and word_exceptions_check(elem[pos]):
-                    return elem[pos]
-
-    def find_description(*args):
-
-        """ Функция анализирует столбцы Описание, Наименование и Основной металл, находит и составляет описание
-         позиции.
-          Возвращает описание позиции, если оно найдено или 0. """
-
-        description = ''
-        keywords = {'цепь': ['цб', 'нц', 'ци'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
-        keywords_weaving = {'перлина': ['шариковая', 'перлина'], 'сингапур': ['сингапур'], 'нонна': ['нонна'],
-                            'якорь': ['якорь', 'якорное'], 'бисмарк': ['бисмарк'], 'фигаро': ['фигаро', 'картье'],
-                            'снэйк': ['снэйк', 'снейк', 'кобра'], 'ромб': ['ромб'], 'love': ['love', 'лав', 'сердечки']}
-        keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона']
-        keywords_inserts = {'аметистом': 'с аметистом', 'топазом': 'с топазом', 'аметрином': 'с аметрином',
-                            'празолитом': 'с празолитом', 'агатом': 'с агатом', 'гранатом':'с гранатом',
-                            'фианит': 'с фианитом', 'турмалин': ' с турмалином', 'Лондон': 'с топазом Лондон'}
-
-        for elem in args[:2]:
-            elem = str(elem)
-
-            # Применение имени изделия в описание, при нахождении ключевых слов
-            if description == '':
-                for keyword in keywords_name:
-
-                    if keyword in elem.lower():
-                        description = keyword.capitalize() + ' ' + args[2].capitalize() + ' ' + args[3]
-                        continue
-
-                # Применение имени изделия в описание, при нахождении префиксов в строках.
-                for part in elem.split(' '):
-                    if description == '':
-                        for key, value in keywords.items():
-                            if description == '':
-                                if part.lower() in value:
-                                    description = key.capitalize() + ' ' + args[2].capitalize() + ' ' + args[3]
-                    else:
-                        break
-
-            #  Поиск вставок в изделия
-            if len(description.split()) >= 3:
-                for key in keywords_inserts.keys():
-
-                    if key in elem:
-                        description = description + ' ' + keywords_inserts[key]
-
-                split_element = elem.split(' ')
-
-                # Поиск размера для колец
-                if 'р.' in elem:
-                    size = str(split_element[(split_element.index('р.') + 1)][:-1])
-                    description = description + ',' + ' р-р ' + size
-
-                # Поиск длины изделия для цепей и браслетов
-                for _string in split_element:
-                    if _string.startswith('l-'):
-                        description = description + ', ' + _string
-
-                # Поиск названия плетения для цепей и браслетов
-                for key, values in keywords_weaving.items():
-                    for value in values:
-
-                        if value in elem.lower():
-                            description = description + ', плетение - ' + key
-
-        return description
+    group = 'excel'
 
     # Выполняется построчный проход по таблице
     for row in range(1, sheet.max_row + 1):
-    # for row in range(15, 18): #  Test variant
+    # for row in range(11, 13): #  Test variant
+        # strings_2_3 = sheet[row][2].value, sheet[row][3].value
+        uin = sheet[row][1].value
+        _id = find_id(sheet[row][2].value, sheet[row][3].value)
+        art = find_art(sheet[row][2].value, sheet[row][3].value, group=group)
+        descr = find_description(sheet[row][2].value, sheet[row][3].value, sheet[row][5].value,
+                                 sheet[row][7].value, group=group)
+        weight = find_weight(sheet[row][4].value, group)
 
-        giis_dict[sheet[row][0].value] = {
-            'uin': sheet[row][1].value if sheet[row][1].value.isdigit() and len(sheet[row][1].value) == 16 else 0,
-            'id': find_ID(sheet[row][2].value, sheet[row][3].value),
-            'Артикул': find_art(sheet[row][2].value, sheet[row][3].value),
-            'Описание': (find_description(sheet[row][2].value, sheet[row][3].value, sheet[row][5].value,
-                                          sheet[row][7].value)),
-            'Масса': sheet[row][4].value + 'г.',
-            'Металл': sheet[row][5].value + ' ' + sheet[row][7].value + ' пробы'
-        }
+        giis_dict = {uin: {}}
+        if _id:
+            giis_dict[uin]['ID'] = _id
+        if art:
+            giis_dict[uin]['Артикул'] = art
 
-    return giis_dict
+        giis_dict[uin]['Описание'] = descr
+        giis_dict[uin]['Масса'] = weight + ' гр'
 
-    # Вывод на экран получившегося словаря построчно
-    # print(*((key, value) for key, value in giis_dict.items()), sep='\n')
+        giis_list.append(giis_dict)
+
+    # for i in giis_list:
+    #     print(i.items())
+    return giis_list
+
 
 # Testing
 # giis_file_parsing(r"E:\Elena\Downloads\batches_list (1).xlsx")  # True example
