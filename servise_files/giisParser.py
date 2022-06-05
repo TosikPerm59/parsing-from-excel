@@ -2,6 +2,7 @@ import openpyxl
 import warnings
 from os import path
 from handlerFunctions import find_art, find_description, find_weight
+from validity import check_id
 import handlerFunctions
 
 warnings.simplefilter("ignore")
@@ -16,7 +17,7 @@ def find_id(*description):
     for elem in description:
         elem = str(elem)
         for part in elem.split(' '):
-            if len(part) == 13 and part.isdigit():
+            if check_id(part):
                 return part
 
 
@@ -38,8 +39,6 @@ def giis_file_parsing(path_to_giis_file):
 
     # Выполняется построчный проход по таблице
     for row in range(1, sheet.max_row + 1):
-    # for row in range(11, 13): #  Test variant
-        # strings_2_3 = sheet[row][2].value, sheet[row][3].value
         uin = sheet[row][1].value
         _id = find_id(sheet[row][2].value, sheet[row][3].value)
         art = find_art(sheet[row][2].value, sheet[row][3].value, group=group)
@@ -58,12 +57,6 @@ def giis_file_parsing(path_to_giis_file):
 
         giis_list.append(giis_dict)
 
-    # for i in giis_list:
-    #     print(i.items())
     return giis_list
 
 
-# Testing
-# giis_file_parsing(r"E:\Elena\Downloads\batches_list (1).xlsx")  # True example
-# giis_file_parsing(r"E:\Elena\Downloads\batches_list (1) — копия.xlsx")  # False example
-# giis_file_parsing(r"E:\Elena\Downloads\batches_list (2).xlsx")  # True example

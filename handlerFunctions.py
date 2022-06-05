@@ -4,7 +4,7 @@ def word_exceptions_check(_string):
     """ Функция проверяет наличие слов исключений в передаваемой строке.
     Возвращает False в случае наличия слов исключений в строке или True при отсутствии """
 
-    word_exceptions = ['585-й', '925-й', '0070', '585', '925']
+    word_exceptions = ['585-й', '925-й', '0070', '585', '925', 'р-р']
 
     for exception in word_exceptions:
         if exception in _string:
@@ -54,15 +54,15 @@ def find_weight(split_string, group):
 
         for elem in split_right_part:
             if len(elem) > 1:
-                if not elem[-1].isdigit():
+                while not elem[-1].isdigit():
                     elem = elem[:-1]
-                if not elem[-1].isdigit():
-                    elem = elem[:-1]
+
                 if ',' in elem:
-                    elem.replace(',', '.')
+                    elem = elem.replace(',', '.')
                 if isfloat(elem):
                     if elem not in sizes:
                         return elem
+
 
     if group == 'excel':
         weight = None
@@ -85,7 +85,11 @@ def find_art(*args, group):
 
     for elem in args:
 
-        elem = str(elem).split(' ')
+        elem = str(elem)
+
+        if group == 'word':
+            index = (elem.index('—') if '—' in elem else elem.index('---'))
+            return elem.split(elem[index])[0].split(' ')[-2]
 
         # Поиск артикула по разным критериям
         for pos in range(len(elem)):
@@ -102,10 +106,10 @@ def find_art(*args, group):
                 return ''.join(elem_lst)
 
             elif ((elem[pos].isdigit() or elem[pos].isalnum()) and 2 < len(elem[pos]) != 13 and
-                  not elem[pos].isalpha() and word_exceptions_check(elem[pos])):
+                  not elem[pos].isalpha() and word_exceptions_check(elem[pos].lower())):
                 return elem[pos]
 
-            elif ('-' in elem[pos] or '_' in elem) and word_exceptions_check(elem[pos]):
+            elif ('-' in elem[pos] or '_' in elem) and word_exceptions_check(elem[pos].lower()):
                 return elem[pos]
 
 
@@ -133,7 +137,8 @@ def find_description(*args, group):
                         'фианитами': ['фианитом', 'фианит', 'фианитами'], 'турмалином': ['турмалином', 'турмалин'],
                         'топазом Лондон': ['Лондон', 'топаз лондон', 'топазом лондон'],
                         'ювелирным стеклом': ['стекло', 'ювелирное'], 'ониксом': ['ониксом'],
-                        'наношпинделем': ['наношпиндель']}
+                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovsky': ['кристалл swarowsky', 'swarovsky'],
+                        'кристаллом премиум': ['кристалл премиум']}
 
     def find_name(split_string):
 
