@@ -1,7 +1,7 @@
 import os
 import docx
 from handlerFunctions import find_art, find_description, find_weight
-from validity import check_invoice
+from validity import check_file_path
 
 
 def docxParser(path):
@@ -43,25 +43,27 @@ def directory_parsing(path_to_invoices):
     # Проход по файлам указанной директории
     for root, dirs, files in os.walk(path_to_invoices):
         for file in files:
+            file_dict = {}
+
+            if file.startswith('~'):
+                continue
 
             path = path_to_invoices + '\\' + file
 
-            if check_invoice(path):
+            if check_file_path(path) and file.endswith('.docx'):
 
-                file_dict = {}
-
-                if file.endswith('.docx'):
-
-                    file_dict[file] = docxParser(path)
-                    file_list.append(file_dict)
+                file_dict[file] = docxParser(path)
+                file_list.append(file_dict)
 
                 # if file.endswith('.pdf'):
                 #     file_pdf_dictionary = pdfParser(path_to_invoices, file)
     for i in file_list:
         for key, values in i.items():
             print(key)
+            counter = 0
             for value in values:
-                print(value)
+                counter += 1
+                print(f'Строка {counter} === {value}')
     return file_list
 
 

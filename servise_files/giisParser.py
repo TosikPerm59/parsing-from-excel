@@ -59,4 +59,10 @@ def giis_file_parsing(path_to_giis_file):
 
     return giis_list
 
-
+#
+# giis_list = giis_file_parsing("E:\Elena\Downloads\\batches_list.xlsx")
+#
+# counter = 0
+# for item in giis_list:
+#     counter += 1
+#     print(f'Строка {counter} --- {item.items()}')

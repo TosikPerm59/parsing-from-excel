@@ -39,8 +39,8 @@ def isfloat(value):
 
 # Варианты возможных размеров изделий
 sizes = ['14.0', '14.5', '15.0', '15.5', '16.0', '16.5', '17.0', '17.5', '18.0', '18.5', '19.0', '19.5', '20.0',
-         '20.5', '21.0', '21.5', '22.0', '22.5', '23.0', '23.5', '24.0', '24.5', '25.0', '30.0', '35.0', '40.0',
-         '45.0', '50.0', '55.0', '60.0', '65.0', '70.0', '75.0']
+         '20.5', '21.0', '21.5', '22.0', '22.5', '23.0', '23.5', '24.0', '24.5', '25.0', '30.0', '35.0', '38.0',
+         '40.0', '42.0', '45.0', '50.0', '55.0', '60.0', '65.0', '70.0', '75.0']
 
 
 def find_weight(split_string, group):
@@ -62,7 +62,6 @@ def find_weight(split_string, group):
                 if isfloat(elem):
                     if elem not in sizes:
                         return elem
-
 
     if group == 'excel':
         weight = None
@@ -88,29 +87,35 @@ def find_art(*args, group):
         elem = str(elem)
 
         if group == 'word':
-            index = (elem.index('—') if '—' in elem else elem.index('---'))
-            return elem.split(elem[index])[0].split(' ')[-2]
+            spl_el = elem.split(' ')
+            ind_1 = (spl_el.index('585') if '585' in elem else spl_el.index('925'))
+            ind_2 = (spl_el.index('—') if '—' in elem else spl_el.index('---'))
+            art = spl_el[ind_1 + 1: ind_2]
+            return ' '.join(art)
 
         # Поиск артикула по разным критериям
-        for pos in range(len(elem)):
-            if elem[pos] in prefixes:
-                return elem[pos] + ' ' + elem[pos + 1]
+        elif group == 'excel':
+            string_list = elem.split(' ')
+            for el in string_list:
 
-            elif elem[pos] == 'Арт.':
-                return elem[pos + 1]
+                if el in prefixes:
+                    ind_el = string_list.index(el)
+                    return ' '.join(string_list[ind_el: ind_el + 2])
 
-            elif 'перлина' in elem[pos] and group == 'excel':
-                elem_lst = list(elem[pos])
-                for simbol in 'перлина':
-                    elem_lst.remove(simbol)
-                return ''.join(elem_lst)
+                elif el == 'Арт.':
+                    ind_el = string_list.index(el)
+                    return string_list[ind_el + 1]
 
-            elif ((elem[pos].isdigit() or elem[pos].isalnum()) and 2 < len(elem[pos]) != 13 and
-                  not elem[pos].isalpha() and word_exceptions_check(elem[pos].lower())):
-                return elem[pos]
+                elif 'перлина' in el:
+                    return el.replace('перлина', '')
 
-            elif ('-' in elem[pos] or '_' in elem) and word_exceptions_check(elem[pos].lower()):
-                return elem[pos]
+                elif ((el.isdigit() or el.isalnum()) and 2 < len(el) != 13 and
+                      not el.isalpha() and word_exceptions_check(el.lower())):
+                    return el
+
+                if ('-' in el or '_' in elem) and word_exceptions_check(el.lower()):
+                    return el
+
 
 
 def find_description(*args, group):
@@ -128,7 +133,8 @@ def find_description(*args, group):
                         'снэйк': ['снэйк', 'снейк', 'кобра'], 'ромб': ['ромб'], 'love': ['love', 'лав', 'сердечки']}
 
     # Варианты имен изделий
-    keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона']
+    keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона', 'колье', 'пирсинг',
+                     'моно-серьга']
 
     # Варианты вставок в изделия
     keywords_inserts = {'аметистом': ['аметистом', 'аметист'], 'топазом': ['топазом', 'топаз'],
@@ -137,7 +143,7 @@ def find_description(*args, group):
                         'фианитами': ['фианитом', 'фианит', 'фианитами'], 'турмалином': ['турмалином', 'турмалин'],
                         'топазом Лондон': ['Лондон', 'топаз лондон', 'топазом лондон'],
                         'ювелирным стеклом': ['стекло', 'ювелирное'], 'ониксом': ['ониксом'],
-                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovsky': ['кристалл swarowsky', 'swarovsky'],
+                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovski': ['кристалл swarowsky', 'swarovsky'],
                         'кристаллом премиум': ['кристалл премиум']}
 
     def find_name(split_string):
@@ -223,10 +229,10 @@ def find_description(*args, group):
         inserts = find_inserts(arg)
 
         # Определение размера для колец, цепей и браслетов
-        size = find_size(arg, group) if (description.split(' '))[0] in ('Кольцо', 'Цепь', 'Браслет') else None
+        size = find_size(arg, group) if (description.split(','))[0] in ('Кольцо', 'Цепь', 'Браслет', 'Колье') else None
 
         # Определение плетения для цепей и браслетов
-        weaving = find_weaving(arg) if (description.split(' '))[0] in ['Цепь', 'Браслет'] else None
+        weaving = find_weaving(arg) if (description.split(','))[0] in ['Цепь', 'Браслет'] else None
 
         if inserts:
             description = f'{description}, c {inserts}'

@@ -18,5 +18,13 @@ def check_file_path(path):
 
 
 def check_id(_id):
-    return len(_id) == 13 and _id.isdigit()
-
+    if not _id:
+        return
+    if len(_id) > 13 and _id[-1] == ' ':
+        _id = _id[: -1]
+    if len(_id) == 13 and _id.isdigit():
+        return _id
+    if _id == '0':
+        return _id
+    else:
+        return

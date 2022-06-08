@@ -39,7 +39,6 @@ def input_invoice_path():
 
 
 def update_invoice():
-
     invoice_path = None
     while not invoice_path:
         print('\n', 'Вы выбрали редактирование накладной.', '\n')
@@ -73,8 +72,9 @@ def find_uin():
     kontur_file_path = "E:\Elena\Downloads\\04.06.2022_Остатки товара.xlsx"
     search_id = None
     while not check_id(search_id):
-        search_id = input('Введите id изделия, по которому нужно найти UIN или 0 для выхода из поиска.'
-                          '(id должен состоять из 13 цифр): ')
+        search_id = check_id(input('Введите id изделия, по которому нужно найти UIN или 0 для выхода из поиска.'
+                                   '(id должен состоять из 13 цифр): '))
+
         if search_id == '0':
             break
     if search_id == '0':
@@ -104,8 +104,8 @@ def find_uin():
 
         search_id = None
         while not check_id(search_id):
-            search_id = input('Введите следуйщий ID или 0 для выхода из поиска.'
-                              '(id должен состоять из 13 цифр): ')
+            search_id = check_id(input('Введите следуйщий ID или 0 для выхода из поиска.'
+                                       '(id должен состоять из 13 цифр): '))
             if search_id == '0':
                 break
         if search_id == '0':
@@ -118,7 +118,7 @@ actions_dict = {'1': ['Редактировать накладную, добав
                 '2': ['Найти соответствия изделий в накладных и в базе ГИИС ДМДК', find_matches],
                 '3': ['Найти UIN для изделия', find_uin]}
 
-print('\n', 'Добро пожаловать в мастер помощи с документами.', '\n')
+print('\n', 'Добро пожаловать в мастер помощи с документами системы ГИИС ДМДК.', '\n')
 
 while act != '0':
     print('\n', 'Какое действие вы хотите выполнить?', '\n')
@@ -134,9 +134,6 @@ while act != '0':
         continue
     else:
         actions_dict[act][1]()
-
-
-
 
 #
 

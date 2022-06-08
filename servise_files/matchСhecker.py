@@ -3,14 +3,10 @@ def match_checking(giis_list, invoices_list):
     counter = 0
     for invoice in invoices_list:
         for invoice_key, invoice_values in invoice.items():
-            match_dict = {}
-            match_dict[invoice_key] = []
+            match_dict = {invoice_key: []}
             for position in invoice_values:
-
                 for position_key, position_values in position.items():
-
                     for giis_position in giis_list:
-
                         for giis_pos_key, giis_pos_values in giis_position.items():
                             matching_counter = 0
                             match_list = []
