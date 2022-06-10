@@ -13,9 +13,14 @@ def check_outgoing_invoice(invoice_path):
             return True
 
 
-def check_file_path(path):
+def check_path(path):
     if os.path.exists(path):
-        if os.path.isfile(path):
+        return True
+
+
+def check_file_path(file_path):
+    if check_path(file_path):
+        if os.path.isfile(file_path):
             return True
 
 

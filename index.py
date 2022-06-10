@@ -3,77 +3,52 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-from servise_files import (giisParser, dirParser, matchСhecker, invoice_changer)
-from inputs import input_giis_file_path, input_invoice_path, input_folder_path
+from servise_files import (giisParser, dirParser, matchСhecker, invoiceChanger, uinFinder)
+from inputs import input_giis_file_path, input_invoice_path, input_folder_path, input_id
 from validity import check_id, check_outgoing_invoice
 
 
 def update_outgoing_invoice():
-    print('\n', 'Вы выбрали редактирование исходящей накладной.', '\n')
-    invoice_path = input_invoice_path()
+    print('\nВы выбрали редактирование исходящей накладной.\n')
+    invoice_path = input_invoice_path(text=' которую хотите изменить')
     if str(invoice_path) == '0':
         return
-
     elif check_outgoing_invoice(invoice_path):
-        invoice_changer.change_invoice(invoice_path)
+        invoiceChanger.change_invoice(invoice_path)
     else:
-        print('Этот файл не явлется накладной или не является исходящей накладной или '
+        print('\nЭтот файл не явлется накладной или не является исходящей накладной или '
               'не является документом Word.')
+        sleep(3)
         update_outgoing_invoice()
 
 
 def find_matches():
-    print('\n', 'Вы выбрали поиск соответствий')
+    print('\nВы выбрали поиск соответствий.\n')
     giis_file_path = input_giis_file_path()
-    folder_path = input_folder_path()
-    giis_list = giisParser.giis_file_parsing(giis_file_path)
-    invoices_list = dirParser.directory_parsing(folder_path)
-    matchСhecker.match_checking(giis_list, invoices_list)
+    folder_path = input_folder_path(text=' содержащей исходящие накладные')
+    if str(folder_path) == '0':
+        return
+    elif 'Документы  Александрова Е.П\Накладные\Исходящие накладные' in folder_path:
+        giis_list = giisParser.giis_file_parsing(giis_file_path)
+        invoices_list = dirParser.directory_parsing(folder_path)
+        matchСhecker.match_checking(giis_list, invoices_list)
+    else:
+        print('\nЭтот путь, не является путем к исходящим накладным.')
+        sleep(3)
+        find_matches()
 
 
 def find_uin():
-    print('\n', 'Вы выбрали поиск UIN')
+    print('\nВы выбрали поиск UIN в списке изделий содержащихся в ГИИС.\n')
     giis_file_path = input_giis_file_path()
-    search_id = None
-    while not check_id(search_id):
-        search_id = check_id(input('Введите id изделия, по которому нужно найти UIN или 0 для выхода из поиска.'
-                                   '(id должен состоять из 13 цифр): '))
-
-        if search_id == '0':
-            break
+    search_id = input_id()
     if search_id == '0':
         return
-    giis_list = giisParser.giis_file_parsing(giis_file_path)
-
-    while search_id != '0':
-        counter = 0
-        result = None
-
-        for giis_dict in giis_list:
-            counter += 1
-            for giis_key, giis_values in giis_dict.items():
-                for item_key, item_value in giis_values.items():
-                    if 'ID' in item_key:
-                        if search_id == giis_values['ID']:
-                            result = giis_key
-                            print(f'\nСовпадение найдено в {counter} строке.')
-                            print(f'для {search_id} UIN = {result}\n')
-                            break
-                if result:
-                    break
-            if result:
-                break
-        if not result:
-            print(f'\nПозиций с id = {search_id} не найдено.\n')
-
-        search_id = None
-        while not check_id(search_id):
-            search_id = check_id(input('Введите следуйщий ID или 0 для выхода из поиска.'
-                                       '(id должен состоять из 13 цифр): '))
-            if search_id == '0':
-                break
-        if search_id == '0':
-            return
+    else:
+        giis_list = giisParser.giis_file_parsing(giis_file_path)
+        uinFinder.find_uin(search_id, giis_list)
+        sleep(3)
+        find_uin()
 
 
 def prepare_an_invoice():

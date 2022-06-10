@@ -88,7 +88,8 @@ def find_art(*args, group):
 
         if group == 'word':
             spl_el = elem.split(' ')
-            ind_1 = (spl_el.index('585') if '585' in elem else spl_el.index('925'))
+            ind_1 = (spl_el.index('585') if '585' in elem and 'Золото' in elem
+                     else spl_el.index('925'))
             ind_2 = (spl_el.index('—') if '—' in elem else spl_el.index('---'))
             art = spl_el[ind_1 + 1: ind_2]
             return ' '.join(art)
