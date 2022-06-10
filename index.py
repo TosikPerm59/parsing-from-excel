@@ -3,9 +3,9 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-from servise_files import (giisParser, dirParser, matchСhecker, change_invoice, validity)
+from servise_files import (giisParser, dirParser, matchСhecker, change_invoice)
 from inputs import input_giis_file_path, input_invoice_path, input_folder_path
-from validity import check_id
+from validity import check_id, check_invoice
 
 
 def update_invoice():
@@ -16,7 +16,7 @@ def update_invoice():
         if str(invoice_path) == '0':
             return
 
-        elif validity.check_invoice(invoice_path):
+        elif check_invoice(invoice_path):
             change_invoice.change(invoice_path)
         else:
             print('Этот файл не явлется накладной.')
