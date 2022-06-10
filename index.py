@@ -3,24 +3,23 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-from servise_files import (giisParser, dirParser, matchСhecker, change_invoice)
+from servise_files import (giisParser, dirParser, matchСhecker, invoice_changer)
 from inputs import input_giis_file_path, input_invoice_path, input_folder_path
-from validity import check_id, check_invoice
+from validity import check_id, check_outgoing_invoice
 
 
-def update_invoice():
-    invoice_path = None
-    while not invoice_path:
-        print('\n', 'Вы выбрали редактирование накладной.', '\n')
-        invoice_path = input_invoice_path()
-        if str(invoice_path) == '0':
-            return
+def update_outgoing_invoice():
+    print('\n', 'Вы выбрали редактирование исходящей накладной.', '\n')
+    invoice_path = input_invoice_path()
+    if str(invoice_path) == '0':
+        return
 
-        elif check_invoice(invoice_path):
-            change_invoice.change(invoice_path)
-        else:
-            print('Этот файл не явлется накладной.')
-            invoice_path = None
+    elif check_outgoing_invoice(invoice_path):
+        invoice_changer.change_invoice(invoice_path)
+    else:
+        print('Этот файл не явлется накладной или не является исходящей накладной или '
+              'не является документом Word.')
+        update_outgoing_invoice()
 
 
 def find_matches():
@@ -82,22 +81,20 @@ def prepare_an_invoice():
 
 
 act = ''
-actions_dict = {'1': ['Редактировать накладную, добавлением в нее цены за грамм, отдельные поля вес и размер',
-                      update_invoice],
-                '2': ['Найти соответствия изделий в накладных и в базе ГИИС ДМДК', find_matches],
-                '3': ['Найти UIN для изделия', find_uin],
+actions_dict = {'1': ['Редактировать накладную, добавлением в нее цены за грамм и отдельного поля вес',
+                      update_outgoing_invoice],
+                '2': ['Найти совпадения изделий в накладных и в базе ГИИС ДМДК', find_matches],
+                '3': ['Найти UIN для изделия из накладной ГИИС', find_uin],
                 '4': ['Подготовить входящую накладную, для загрузки ее в КонтурМаркет', prepare_an_invoice]}
 
-print('\n', 'Добро пожаловать в мастер помощи с документами системы ГИИС ДМДК.', '\n')
+print('\nДобро пожаловать в мастер помощи с документами системы ГИИС ДМДК.')
 
 while act != '0':
-    print('\n', 'Какое действие вы хотите выполнить?', '\n')
-    sleep(1)
+    print('\nКакое действие вы хотите выполнить?', '\n')
     for key, value in actions_dict.items():
-        print(f'{key} - {value[0]}\n')
-    sleep(1)
-    print('Введите цифру соответствующую желаемому действию или 0(ноль)  для завершения программы.')
-    act = input('Введите цифру: ')
+        print(f'{key} - {value[0]}')
+    print('\nВведите цифру соответствующую желаемому действию или 0(ноль)  для завершения программы.')
+    act = input('Выберите действие : ')
     if act == '0' or not act.isdigit():
         continue
     elif act not in actions_dict.keys():

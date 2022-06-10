@@ -2,7 +2,9 @@ import docx
 import os
 
 
-def check_invoice(invoice_path):
+def check_outgoing_invoice(invoice_path):
+    if not invoice_path.endswith('.docx'):
+        return
     document = docx.Document(invoice_path)
     sender = 'ИП Александрова Елена Петровна "Golden_Sun", ИНН: 591792868890, улица Уральская дом 1'
 

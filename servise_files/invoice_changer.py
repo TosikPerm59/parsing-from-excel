@@ -8,7 +8,7 @@ from docx.shared import Pt
 from handlerFunctions import find_weight
 
 
-def change(path):
+def change_invoice(path):
 
     update_path = f'{os.path.split(path)[0]}\\Измененные накладные'
     new_invoice_path = f'{update_path}\\{os.path.basename(path)}'

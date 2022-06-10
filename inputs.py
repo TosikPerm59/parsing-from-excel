@@ -15,12 +15,12 @@ def input_folder_path():
 def input_invoice_path():
     invoice_path = None
     while not invoice_path:
-        print('Введите путь к накладной которую хотите изменить или 0 для возврата к основному меню.')
+        print('Введите путь к накладной  или 0 для возврата к основному меню.')
         invoice_path = (input('Введите путь: ')).replace('"', '')
         if str(invoice_path) == '0':
             return invoice_path
         if check_file_path(invoice_path):
             return invoice_path
         else:
-            print('\n', 'Путь к файлу не корректен, или файл не является документом WORD', '\n')
+            print('\n', 'Путь к файлу не корректен.', '\n')
             invoice_path = None
