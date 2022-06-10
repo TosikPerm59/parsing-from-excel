@@ -9,7 +9,6 @@ warnings.simplefilter("ignore")
 
 
 def find_id(*description):
-
     """ Функция ищет в описании и наименовании позиции, строку состоящую из 13 символов и состоящую
     только из цифр.
         Возвращает строку или None """
@@ -22,7 +21,6 @@ def find_id(*description):
 
 
 def giis_file_parsing(path_to_giis_file):
-
     """ Функция анализа файла Excel сформированного платформой ГИИС ДМДК.
       На вход функция принимает путь к файлу, который необходимо обработать. Так как, данные из портала ГИИС ДМДК
     заполняются разными людьми, то и формат записи и порядок заполнения не имеет четкой последовательности. Для того
@@ -59,7 +57,8 @@ def giis_file_parsing(path_to_giis_file):
 
     return giis_list
 
-#
+
+# Test
 # giis_list = giis_file_parsing("E:\Elena\Downloads\\batches_list.xlsx")
 #
 # counter = 0

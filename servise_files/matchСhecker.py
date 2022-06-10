@@ -1,6 +1,8 @@
 
 def match_checking(giis_list, invoices_list):
     counter = 0
+    full_mach_list = []
+
     for invoice in invoices_list:
         for invoice_key, invoice_values in invoice.items():
             match_dict = {invoice_key: []}
@@ -41,6 +43,7 @@ def match_checking(giis_list, invoices_list):
                                 counter += 1
                                 if 'Масса' in match_list:
                                     if matching_counter == 6:
+                                        full_mach_list.append(giis_position)
                                         print(*giis_position.items(), *position.items(), sep='\n')
                                         print("\033[32m\033[1m\033[7m {}" .format(f'True найдено {matching_counter} '
                                                                                   f'совпадения: {tuple(match_list)}'))
@@ -52,7 +55,11 @@ def match_checking(giis_list, invoices_list):
                                             f'True найдено {matching_counter} совпадения: {tuple(match_list)}'))
                                         print("\033[0m {}".format(''))
 
-    print(f'Всего найдено {counter} близких по содержанию позиций.')
+    print(f'Всего найдено {counter} близких по содержанию позиций, из них {len(full_mach_list)} идентичных позиций.')
+    print(f'\nСписок идентичных позиций:\n')
+    for item in full_mach_list:
+        print(*item.items(), end='\n\n')
+
 
 
 

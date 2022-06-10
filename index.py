@@ -3,56 +3,23 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-
 from servise_files import (giisParser, dirParser, matchСhecker, change_invoice, validity)
-
+from inputs import input_giis_file_path, input_invoice_path, input_folder_path
 from validity import check_id
-
-
-def edit_path(path):
-    return path.replace('"', '')
-
-
-def input_giis_file_path():
-    # giis_file_path = input('Укажите путь к файлу, содержащему сведения ГИИС ДМДК: ').replace('"', '')
-    giis_file_path = "E:\Elena\Downloads\\batches_list.xlsx"
-    return giis_file_path
-
-
-def input_folder_path():
-    folder_path = input('Укажите директорию проверяемых накладных: ').replace('"', '')
-    return folder_path
-
-
-def input_invoice_path():
-    invoice_path = None
-    while not invoice_path:
-        print('Введите путь к накладной которую хотите изменить или 0 для возврата к основному меню.')
-        invoice_path = (input('Введите путь: ')).replace('"', '')
-        if str(invoice_path) == '0':
-            return invoice_path
-        if validity.check_file_path(invoice_path):
-            return invoice_path
-        else:
-            print('\n', 'Путь к файлу не корректен, или файл не является документом WORD', '\n')
-            invoice_path = None
 
 
 def update_invoice():
     invoice_path = None
     while not invoice_path:
         print('\n', 'Вы выбрали редактирование накладной.', '\n')
-        sleep(1)
         invoice_path = input_invoice_path()
         if str(invoice_path) == '0':
             return
 
         elif validity.check_invoice(invoice_path):
             change_invoice.change(invoice_path)
-            sleep(5)
         else:
             print('Этот файл не явлется накладной.')
-            sleep(2)
             invoice_path = None
 
 
@@ -63,13 +30,11 @@ def find_matches():
     giis_list = giisParser.giis_file_parsing(giis_file_path)
     invoices_list = dirParser.directory_parsing(folder_path)
     matchСhecker.match_checking(giis_list, invoices_list)
-    sleep(2)
 
 
 def find_uin():
     print('\n', 'Вы выбрали поиск UIN')
-    giis_file_path = "E:\Elena\Downloads\\batches_list.xlsx"
-    kontur_file_path = "E:\Elena\Downloads\\04.06.2022_Остатки товара.xlsx"
+    giis_file_path = input_giis_file_path()
     search_id = None
     while not check_id(search_id):
         search_id = check_id(input('Введите id изделия, по которому нужно найти UIN или 0 для выхода из поиска.'
@@ -112,11 +77,16 @@ def find_uin():
             return
 
 
+def prepare_an_invoice():
+    print('\n', 'Вы выбрали подготовку входящей накладной для загрузки ее в КонтурМаркет')
+
+
 act = ''
 actions_dict = {'1': ['Редактировать накладную, добавлением в нее цены за грамм, отдельные поля вес и размер',
                       update_invoice],
                 '2': ['Найти соответствия изделий в накладных и в базе ГИИС ДМДК', find_matches],
-                '3': ['Найти UIN для изделия', find_uin]}
+                '3': ['Найти UIN для изделия', find_uin],
+                '4': ['Подготовить входящую накладную, для загрузки ее в КонтурМаркет', prepare_an_invoice]}
 
 print('\n', 'Добро пожаловать в мастер помощи с документами системы ГИИС ДМДК.', '\n')
 
@@ -134,40 +104,3 @@ while act != '0':
         continue
     else:
         actions_dict[act][1]()
-
-#
-
-#
-# # Парсинг файла Excel, созданого платформой ГИИС ДМДК
-# giis_list = giisParser.giis_file_parsing(path_to_giis_file)
-#
-#
-# # Парсинг, анализ и помещение в список накладных созданных КонтурМаркетом
-# invoices_list = dirParser.directory_parsing(path_to_invoices)
-#
-# # Проверка на совпадение позиций
-#
-# report_list = matchСhecker.match_checking(giis_list, invoices_list)
-#
-# # Создание файла отчета
-# # reportСreator.create_report_file(report_list)
-#
-# # print('Список изделий содержащихся в накладной ГИИС ДМДК')
-# # print()
-# # for i in giis_list:
-# #     print(i.items())
-# #
-# # print()
-# #
-# # print('Список изделий в накладных:')
-# #
-# # for dictionaries in invoices_list:
-# #     for key, values in dictionaries.items():
-# #         print()
-# #         print(key)
-# #         print()
-# #         for value in values:
-# #             print(value)
-#
-#
-#

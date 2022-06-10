@@ -95,16 +95,16 @@ def find_art(*args, group):
 
         # Поиск артикула по разным критериям
         elif group == 'excel':
-            string_list = elem.split(' ')
-            for el in string_list:
+            str_lst = elem.split(' ')
+            for el in str_lst:
 
                 if el in prefixes:
-                    ind_el = string_list.index(el)
-                    return ' '.join(string_list[ind_el: ind_el + 2])
+                    ind_el = str_lst.index(el)
+                    return ' '.join(str_lst[ind_el: ind_el + 2])
 
                 elif el == 'Арт.':
-                    ind_el = string_list.index(el)
-                    return string_list[ind_el + 1]
+                    ind_el = str_lst.index(el)
+                    return str_lst[ind_el + 1]
 
                 elif 'перлина' in el:
                     return el.replace('перлина', '')
@@ -115,7 +115,6 @@ def find_art(*args, group):
 
                 if ('-' in el or '_' in elem) and word_exceptions_check(el.lower()):
                     return el
-
 
 
 def find_description(*args, group):
@@ -202,6 +201,18 @@ def find_description(*args, group):
             for _string in split_string:
                 if _string.startswith('l-'):
                     return _string[2:4] + '.0'
+            if 'разм.' in split_string:
+                size_index = split_string.index('разм.') + 1
+                probable_size = split_string[size_index]
+
+                if probable_size[-1] == ',':
+                    probable_size = probable_size[: -1]
+                if ',' in probable_size:
+                    probable_size = probable_size.replace(',', '.')
+                if isinteger(probable_size):
+                    probable_size = probable_size + '.0'
+                if isfloat(probable_size):
+                    return probable_size
 
         elif group == 'word':
 
