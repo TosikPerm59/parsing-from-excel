@@ -3,9 +3,10 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-from servise_files import (giisParser, dirParser, matchСhecker, invoiceChanger, uinFinder)
+from servise_files import (giisParser, dirParser, matchСhecker, invoiceChanger, excel_parser)
 from inputs import input_giis_file_path, input_invoice_path, input_folder_path, input_id
-from validity import check_id, check_outgoing_invoice
+from validity import check_outgoing_invoice
+from allFinders import find_uin
 
 
 def update_outgoing_invoice():
@@ -38,7 +39,7 @@ def find_matches():
         find_matches()
 
 
-def find_uin():
+def search_uin():
     print('\nВы выбрали поиск UIN в списке изделий содержащихся в ГИИС.\n')
     giis_file_path = input_giis_file_path()
     search_id = input_id()
@@ -46,20 +47,25 @@ def find_uin():
         return
     else:
         giis_list = giisParser.giis_file_parsing(giis_file_path)
-        uinFinder.find_uin(search_id, giis_list)
+        find_uin(search_id, giis_list)
         sleep(3)
-        find_uin()
+        search_uin()
 
 
 def prepare_an_invoice():
-    print('\n', 'Вы выбрали подготовку входящей накладной для загрузки ее в КонтурМаркет')
+    print('\nВы выбрали подготовку входящей накладной для загрузки ее в КонтурМаркет\n')
+    invoice_path = input_invoice_path(text=' которую будем готовить для загрузки в КонтурМаркет')
+    if str(invoice_path) == '0':
+        return
+    else:
+        excel_parser.excel_file_parsing(invoice_path)
 
 
 act = ''
 actions_dict = {'1': ['Редактировать накладную, добавлением в нее цены за грамм и отдельного поля вес',
                       update_outgoing_invoice],
                 '2': ['Найти совпадения изделий в накладных и в базе ГИИС ДМДК', find_matches],
-                '3': ['Найти UIN для изделия из накладной ГИИС', find_uin],
+                '3': ['Найти UIN для изделия из накладной ГИИС', search_uin],
                 '4': ['Подготовить входящую накладную, для загрузки ее в КонтурМаркет', prepare_an_invoice]}
 
 print('\nДобро пожаловать в мастер помощи с документами системы ГИИС ДМДК.')

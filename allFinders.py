@@ -1,46 +1,31 @@
-
-def word_exceptions_check(_string):
-
-    """ Функция проверяет наличие слов исключений в передаваемой строке.
-    Возвращает False в случае наличия слов исключений в строке или True при отсутствии """
-
-    word_exceptions = ['585-й', '925-й', '0070', '585', '925', 'р-р']
-
-    for exception in word_exceptions:
-        if exception in _string:
-            return False
-    else:
-        return True
-
-
-def isinteger(value):
-
-    """ Функция проверяет элемент на причастность к целому числу.
-    Возвращает boolean """
-
-    try:
-        int(value)
-        return True
-    except ValueError:
-        return False
-
-
-def isfloat(value):
-
-    """ Функция проверяет элемент на причастность к вещественному числу.
-        Возвращает boolean """
-
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
+from validity import isfloat, isinteger, check_word_exceptions
 
 
 # Варианты возможных размеров изделий
 sizes = ['14.0', '14.5', '15.0', '15.5', '16.0', '16.5', '17.0', '17.5', '18.0', '18.5', '19.0', '19.5', '20.0',
          '20.5', '21.0', '21.5', '22.0', '22.5', '23.0', '23.5', '24.0', '24.5', '25.0', '30.0', '35.0', '38.0',
          '40.0', '42.0', '45.0', '50.0', '55.0', '60.0', '65.0', '70.0', '75.0']
+
+
+def find_uin(search_id, giis_list):
+    counter = 0
+    result = None
+    for giis_dict in giis_list:
+        counter += 1
+        for giis_key, giis_values in giis_dict.items():
+            for item_key, item_value in giis_values.items():
+                if 'ID' in item_key:
+                    if search_id == giis_values['ID']:
+                        result = giis_key
+                        print(f'\nСовпадение найдено в {counter} строке списка ГИИС .')
+                        print(f'для id = {search_id}, UIN = {result}\n')
+                        break
+            if result:
+                break
+        if result:
+            break
+    if not result:
+        print(f'\nПозиций с id = {search_id} не найдено.\n')
 
 
 def find_weight(split_string, group):
@@ -111,10 +96,10 @@ def find_art(*args, group):
                     return el.replace('перлина', '')
 
                 elif ((el.isdigit() or el.isalnum()) and 2 < len(el) != 13 and
-                      not el.isalpha() and word_exceptions_check(el.lower())):
+                      not el.isalpha() and check_word_exceptions(el.lower())):
                     return el
 
-                if ('-' in el or '_' in elem) and word_exceptions_check(el.lower()):
+                if ('-' in el or '_' in elem) and check_word_exceptions(el.lower()):
                     return el
 
 
@@ -143,7 +128,7 @@ def find_description(*args, group):
                         'фианитами': ['фианитом', 'фианит', 'фианитами'], 'турмалином': ['турмалином', 'турмалин'],
                         'топазом Лондон': ['Лондон', 'топаз лондон', 'топазом лондон'],
                         'ювелирным стеклом': ['стекло', 'ювелирное'], 'ониксом': ['ониксом'],
-                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovski': ['кристалл swarowsky', 'swarovsky'],
+                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovski': ['кристалл swarovski', 'swarovski'],
                         'кристаллом премиум': ['кристалл премиум']}
 
     def find_name(split_string):
@@ -283,4 +268,5 @@ def find_description(*args, group):
             description = f'{description}, {size} р-р'
 
         return description
+
 

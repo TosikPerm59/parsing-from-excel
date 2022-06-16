@@ -1,11 +1,9 @@
 import docx
 import os
-from docx.styles.style import _ParagraphStyle
-
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt
 
-from handlerFunctions import find_weight
+from allFinders import find_weight
 
 
 def change_invoice(path):
@@ -22,7 +20,6 @@ def change_invoice(path):
     document = docx.Document(path)
     table = document.tables[1]
     max_row = len(table.rows)
-    max_cells = len(table.rows[1].cells)
     total_weight = 0
 
     for row in range(3, max_row - 21):

@@ -1,6 +1,6 @@
 import os
 import docx
-from handlerFunctions import find_art, find_description, find_weight
+from allFinders import find_art, find_description, find_weight
 from validity import check_file_path
 
 

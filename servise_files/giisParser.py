@@ -1,9 +1,7 @@
 import openpyxl
 import warnings
-from os import path
-from handlerFunctions import find_art, find_description, find_weight
+from allFinders import find_art, find_description, find_weight
 from validity import check_id
-import handlerFunctions
 
 warnings.simplefilter("ignore")
 

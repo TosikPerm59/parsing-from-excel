@@ -35,3 +35,41 @@ def check_id(_id):
         return _id
     else:
         return
+
+
+def isinteger(value):
+
+    """ Функция проверяет элемент на причастность к целому числу.
+    Возвращает boolean """
+
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
+def isfloat(value):
+
+    """ Функция проверяет элемент на причастность к вещественному числу.
+        Возвращает boolean """
+
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def check_word_exceptions(_string):
+
+    """ Функция проверяет наличие слов исключений в передаваемой строке.
+    Возвращает False в случае наличия слов исключений в строке или True при отсутствии """
+
+    word_exceptions = ['585-й', '925-й', '0070', '585', '925', 'р-р']
+
+    for exception in word_exceptions:
+        if exception in _string:
+            return False
+    else:
+        return True

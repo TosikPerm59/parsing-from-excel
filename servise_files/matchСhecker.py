@@ -59,7 +59,3 @@ def match_checking(giis_list, invoices_list):
     print(f'\nСписок идентичных позиций:\n')
     for item in full_mach_list:
         print(*item.items(), end='\n\n')
-
-
-
-
