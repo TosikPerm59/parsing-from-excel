@@ -24,7 +24,7 @@ def docxParser(path):
         art = find_art(_string, group=group)
         art_dict = {find_art(_string, group=group): {}}
         art_dict[art]['Описание'] = find_description(split_string, group=group)
-        art_dict[art]['Масса'] = str(find_weight(split_string, group=group)) + ' гр'
+        art_dict[art]['Масса'] = str(find_weight(split_string)) + ' гр'
 
         art_list.append(art_dict)
 

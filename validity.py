@@ -27,12 +27,8 @@ def check_file_path(file_path):
 def check_id(_id):
     if not _id:
         return
-    if len(_id) > 13 and _id[-1] == ' ':
-        _id = _id[: -1]
     if len(_id) == 13 and _id.isdigit():
-        return _id
-    if _id == '0':
-        return _id
+        return True
     else:
         return
 
@@ -59,6 +55,8 @@ def isfloat(value):
         return True
     except ValueError:
         return False
+    except TypeError:
+        return False
 
 
 def check_word_exceptions(_string):
@@ -73,3 +71,11 @@ def check_word_exceptions(_string):
             return False
     else:
         return True
+
+
+def check_weight(weight):
+    try:
+        if isfloat(weight) and len(weight.split('.')[1]) == 2:
+            return True
+    except IndexError:
+        return False

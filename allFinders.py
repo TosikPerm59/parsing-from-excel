@@ -1,10 +1,40 @@
-from validity import isfloat, isinteger, check_word_exceptions
-
+from validity import *
 
 # Варианты возможных размеров изделий
 sizes = ['14.0', '14.5', '15.0', '15.5', '16.0', '16.5', '17.0', '17.5', '18.0', '18.5', '19.0', '19.5', '20.0',
          '20.5', '21.0', '21.5', '22.0', '22.5', '23.0', '23.5', '24.0', '24.5', '25.0', '30.0', '35.0', '38.0',
          '40.0', '42.0', '45.0', '50.0', '55.0', '60.0', '65.0', '70.0', '75.0']
+
+# Варианты префиксов артикула изделия относящегося к цепям или браслетам
+keywords = {'цепь': ['цб', 'нц', 'ци'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
+
+# Варианты плетений цепей и браслетов
+keywords_weaving = {'перлина': ['шариковая', 'перлина'], 'сингапур': ['сингапур'], 'нонна': ['нонна'],
+                    'якорь': ['якорь', 'якорное'], 'бисмарк': ['бисмарк'], 'фигаро': ['фигаро', 'картье'],
+                    'снэйк': ['снэйк', 'снейк', 'кобра'], 'ромб': ['ромб'], 'love': ['love', 'лав', 'сердечки']}
+
+# Варианты имен изделий
+keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона', 'колье', 'пирсинг',
+                 'моно-серьга']
+
+# Варианты вставок в изделия
+keywords_inserts = {'аметистом': ['аметистом', 'аметист'], 'топазом': ['топазом', 'топаз'],
+                    'аметрином': ['аметрином', 'аметрин'], 'празолитом': ['празолитом', 'празолит'],
+                    'агатом': ['агатом', 'агат'], 'гранатом': ['гранатом', 'гранат'],
+                    'фианитами': ['фианитом', 'фианит', 'фианитами'], 'турмалином': ['турмалином', 'турмалин'],
+                    'топазом Лондон': ['Лондон', 'топаз лондон', 'топазом лондон'],
+                    'ювелирным стеклом': ['стекло', 'ювелирное'], 'ониксом': ['ониксом'],
+                    'наношпинделем': ['наношпиндель'], 'кристаллом Swarovski': ['кристалл swarovski', 'swarovski'],
+                    'кристаллом премиум': ['кристалл премиум']}
+
+
+def find_barcode(_string):
+    spl_str = _string.split(' ')
+    for elem in spl_str:
+        if elem.startswith('(') and elem.endswith(')'):
+            elem = elem[1: -1]
+        if check_id(elem):
+            return elem
 
 
 def find_uin(search_id, giis_list):
@@ -17,204 +47,198 @@ def find_uin(search_id, giis_list):
                 if 'ID' in item_key:
                     if search_id == giis_values['ID']:
                         result = giis_key
-                        print(f'\nСовпадение найдено в {counter} строке списка ГИИС .')
-                        print(f'для id = {search_id}, UIN = {result}\n')
-                        break
+                        return result, counter
             if result:
                 break
         if result:
             break
     if not result:
-        print(f'\nПозиций с id = {search_id} не найдено.\n')
+        return None, None
 
 
-def find_weight(split_string, group):
-
+def find_weight(split_string):
     """ Функция поиска массы(вес) изделия, перебирает элементы, проверяет их на причастность к числу.
     Возвращает вещественное число или None"""
 
-    if group == 'word':
-        index = (split_string.index('—') if '—' in split_string else split_string.index('---'))
-        split_right_part = ((' '.join(split_string).split(split_string[index])[1]).split(' '))[1:]
+    original_string = ' '.join(split_string)
 
-        for elem in split_right_part:
-            if len(elem) > 1:
-                while not elem[-1].isdigit():
-                    elem = elem[:-1]
+    if 'вес' in split_string:
+        weight_ind = split_string.index('вес') + 1
+        split_string = [split_string[weight_ind]]
 
-                if ',' in elem:
-                    elem = elem.replace(',', '.')
-                if isfloat(elem):
-                    if elem not in sizes:
-                        return elem
+    elif '—' in split_string or '---' in split_string:
+        index = split_string.index('—') if '—' in split_string else split_string.index('---')
+        split_string = split_string[index + 1:]
 
-    if group == 'excel':
-        weight = None
-        if ',' in split_string:
-            weight = split_string.replace(',', '.')
-            if len((weight.split('.'))[1]) == 1:
-                weight = weight + '0'
-        if split_string.isdigit():
-            weight = split_string + '.00'
+    elif '585' in split_string or '925' in split_string:
+        index = split_string.index('585') if '585' in split_string else split_string.index('925')
+        split_string = split_string[index + 1:]
 
-        return weight
+    for elem in split_string:
+        elem = elem.strip()
+        try:
+            while not elem[-1].isdigit():
+                elem = elem[:-1]
+        except IndexError:
+            pass
+
+        if ',' in elem:
+            elem = elem.replace(',', '.')
+        if elem in sizes:
+            print(f'Вес изделия, который определила программа, есть в списке размеров изделий. '
+                  f'Вы вы уверены что значение {elem}, находящееся в строке ({original_string}),'
+                  f'дейсвительно является весом изделия?')
+            answer = input('введите "да", или укажите правильный вес изделия: ')
+            if answer == 'да':
+                pass
+            else:
+                elem = answer
+        if isinteger(elem):
+            elem = elem + '.00'
+        if isfloat(elem):
+            if len(elem.split('.')[1]) == 1:
+                elem = elem + '0'
+        if check_weight(elem):
+            return elem
+
+    else:
+        print(f'Программе не удалось определить вес изделия в строке {original_string}')
+        answer = ''
+        while not check_weight(answer):
+            answer = input('Пожалуйста укажите вес изделия в формате 0.00: ')
+        return answer
 
 
 def find_art(*args, group):
-
     """ Функция анализирует столбцы Описание и Наименование, находит и проверяет артикул позиции
       Возвращает артикул или None. """
 
     prefixes = ['НЦ', 'ЦБ', 'ЦИ', 'ББ', 'БВ', 'БИ', 'БК', 'НБ']
 
-    for elem in args:
+    for string_from_args in args:
 
-        elem = str(elem)
+        string_from_args = str(string_from_args).lower().split(' ')
+
+        if 'арт.' in string_from_args:
+            art_ind = string_from_args.index('арт.') + 1
+            return string_from_args[art_ind].upper()
 
         if group == 'word':
-            spl_el = elem.split(' ')
-            ind_1 = (spl_el.index('585') if '585' in elem and 'Золото' in elem
-                     else spl_el.index('925'))
-            ind_2 = (spl_el.index('—') if '—' in elem else spl_el.index('---'))
-            art = spl_el[ind_1 + 1: ind_2]
-            return ' '.join(art)
+            if '585'in string_from_args or '925' in string_from_args:
+                ind_1 = (string_from_args.index('585') if '585' in string_from_args and 'золото' in string_from_args
+                         else string_from_args.index('925'))
+                string_from_args = string_from_args[ind_1 + 1:]
 
-        # Поиск артикула по разным критериям
-        elif group == 'excel':
-            str_lst = elem.split(' ')
-            for el in str_lst:
+                if '—' in string_from_args or '---' in string_from_args:
+                    ind_2 = (string_from_args.index('—') if '—' in string_from_args else string_from_args.index('---'))
+                    art = string_from_args[: ind_2]
+                    return ' '.join(art).upper()
 
-                if el in prefixes:
-                    ind_el = str_lst.index(el)
-                    return ' '.join(str_lst[ind_el: ind_el + 2])
+        for elem in string_from_args:
+            for pref in prefixes:
+                if pref in elem:
+                    return elem.upper()
 
-                elif el == 'Арт.':
-                    ind_el = str_lst.index(el)
-                    return str_lst[ind_el + 1]
+            if elem.endswith('перлина') and group == 'excel':
+                return elem.replace('перлина', '').upper()
 
-                elif 'перлина' in el:
-                    return el.replace('перлина', '')
+            if ((elem.isdigit() or elem.isalnum()) and 2 < len(elem) != 13 and
+                    not elem.isalpha() and check_word_exceptions(elem.lower())):
+                return elem.upper()
 
-                elif ((el.isdigit() or el.isalnum()) and 2 < len(el) != 13 and
-                      not el.isalpha() and check_word_exceptions(el.lower())):
-                    return el
+            if ('-' in elem or '_' in elem) and check_word_exceptions(elem):
+                return elem.upper()
 
-                if ('-' in el or '_' in elem) and check_word_exceptions(el.lower()):
-                    return el
+
+def find_name(split_string):
+    """ Метод поиска наименования изделия, сопоставляет содержимое строки со списком вариантов имен.
+    Возвращает имя или None ."""
+    for name in keywords_name:
+
+        if name in split_string:
+            return name.capitalize()
+
+    for keywords_key, keywords_values in keywords.items():
+        for value in keywords_values:
+            if value in split_string:
+                return keywords_key.capitalize()
+
+
+def find_metal(split_string):
+    """ Метод определяющий из какого металла изготовлено изделие.
+    Возвращает Название металла с пробой или None. """
+
+    if '585' in split_string or 'золото' in split_string:
+        return 'Золото 585'
+    elif '925' in split_string or 'серебро' in split_string:
+        return 'Серебро 925'
+
+
+def find_weaving(split_string):
+    """ Метод определяющий плетения для цепей и браслетов, сопоставляет содержимое строки со списком вариантов.
+    Возвращает название плетения или None. """
+
+    for keywords_weaving_key, keywords_weaving_values in keywords_weaving.items():
+        for value in keywords_weaving_values:
+            for elem in split_string:
+                if value in elem:
+                    return keywords_weaving_key
+
+
+def find_inserts(split_string):
+    """ Метод определяющий вставки в изделия, сопоставляет содержимое строки со списком вариантов.
+    Возвращает название плетения или None. """
+
+    for keywords_inserts_key, keywords_inserts_values in keywords_inserts.items():
+        for value in keywords_inserts_values:
+            if value in split_string:
+                return keywords_inserts_key
+
+
+def find_size(split_string, group):
+    """ Метод определяющий размер изделия, перебирает елементы строки, проверяет их на причастность к числам и
+    сопоставляет с возможными вариантами размеров.
+     Возвращает вещественное число или None. """
+
+    if group == 'excel':
+        for _string in split_string:
+            if _string.startswith('l-'):
+                return _string[2:4] + '.0'
+        if 'разм.' in split_string:
+            size_index = split_string.index('разм.') + 1
+            probable_size = split_string[size_index]
+
+            if probable_size[-1] == ',':
+                probable_size = probable_size[: -1]
+            if ',' in probable_size:
+                probable_size = probable_size.replace(',', '.')
+            if isinteger(probable_size):
+                probable_size = probable_size + '.0'
+            if isfloat(probable_size):
+                return probable_size
+
+    elif group == 'word':
+
+        if '—' in split_string or '---' in split_string:
+            index = (split_string.index('—') if '—' in split_string else split_string.index('---'))
+            split_string = ((' '.join(split_string).split(split_string[index])[1]).split(' '))[1:]
+
+        for el_r_part in split_string[-1::-1]:
+            if len(el_r_part) > 1:
+                if ',' in el_r_part:
+                    el_r_part.replace(',', '.')
+                if isfloat(el_r_part):
+                    if el_r_part in sizes:
+                        return el_r_part
+                if isinteger(el_r_part):
+                    if str(float(el_r_part)) in sizes:
+                        return str(float(el_r_part))
 
 
 def find_description(*args, group):
-
     """ Функция анализирует столбцы Описание, Наименование и Основной металл, находит и составляет описание
         позиции.
         Возвращает описание позиции. """
-
-    # Варианты префиксов артикула изделия относящегося к цепям или браслетам
-    keywords = {'цепь': ['цб', 'нц', 'ци'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
-
-    # Варианты плетений цепей и браслетов
-    keywords_weaving = {'перлина': ['шариковая', 'перлина'], 'сингапур': ['сингапур'], 'нонна': ['нонна'],
-                        'якорь': ['якорь', 'якорное'], 'бисмарк': ['бисмарк'], 'фигаро': ['фигаро', 'картье'],
-                        'снэйк': ['снэйк', 'снейк', 'кобра'], 'ромб': ['ромб'], 'love': ['love', 'лав', 'сердечки']}
-
-    # Варианты имен изделий
-    keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона', 'колье', 'пирсинг',
-                     'моно-серьга']
-
-    # Варианты вставок в изделия
-    keywords_inserts = {'аметистом': ['аметистом', 'аметист'], 'топазом': ['топазом', 'топаз'],
-                        'аметрином': ['аметрином', 'аметрин'], 'празолитом': ['празолитом', 'празолит'],
-                        'агатом': ['агатом', 'агат'], 'гранатом': ['гранатом', 'гранат'],
-                        'фианитами': ['фианитом', 'фианит', 'фианитами'], 'турмалином': ['турмалином', 'турмалин'],
-                        'топазом Лондон': ['Лондон', 'топаз лондон', 'топазом лондон'],
-                        'ювелирным стеклом': ['стекло', 'ювелирное'], 'ониксом': ['ониксом'],
-                        'наношпинделем': ['наношпиндель'], 'кристаллом Swarovski': ['кристалл swarovski', 'swarovski'],
-                        'кристаллом премиум': ['кристалл премиум']}
-
-    def find_name(split_string):
-
-        """ Метод поиска наименования изделия, сопоставляет содержимое строки со списком вариантов имен.
-        Возвращает имя или None ."""
-
-        for name in keywords_name:
-
-            if name in split_string:
-                return name.capitalize()
-
-        for keywords_key, keywords_values in keywords.items():
-            for value in keywords_values:
-                if value in split_string:
-                    return keywords_key.capitalize()
-
-    def find_metal(split_string):
-
-        """ Метод определяющий из какого металла изготовлено изделие.
-        Возвращает Название металла с пробой или None. """
-
-        if '585' in split_string or 'золото' in split_string:
-            return 'Золото 585'
-        elif '925' in split_string or 'серебро' in split_string:
-            return 'Серебро 925'
-
-    def find_weaving(split_string):
-
-        """ Метод определяющий плетения для цепей и браслетов, сопоставляет содержимое строки со списком вариантов.
-        Возвращает название плетения или None. """
-
-        for keywords_weaving_key, keywords_weaving_values in keywords_weaving.items():
-            for value in keywords_weaving_values:
-                for elem in split_string:
-                    if value in elem:
-                        return keywords_weaving_key
-
-    def find_inserts(split_string):
-
-        """ Метод определяющий вставки в изделия, сопоставляет содержимое строки со списком вариантов.
-        Возвращает название плетения или None. """
-
-        for keywords_inserts_key, keywords_inserts_values in keywords_inserts.items():
-            for value in keywords_inserts_values:
-                if value in split_string:
-                    return keywords_inserts_key
-
-    def find_size(split_string, group):
-
-        """ Метод определяющий размер изделия, перебирает елементы строки, проверяет их на причастность к числам и
-        сопоставляет с возможными вариантами размеров.
-         Возвращает вещественное число или None. """
-
-        if group == 'excel':
-            for _string in split_string:
-                if _string.startswith('l-'):
-                    return _string[2:4] + '.0'
-            if 'разм.' in split_string:
-                size_index = split_string.index('разм.') + 1
-                probable_size = split_string[size_index]
-
-                if probable_size[-1] == ',':
-                    probable_size = probable_size[: -1]
-                if ',' in probable_size:
-                    probable_size = probable_size.replace(',', '.')
-                if isinteger(probable_size):
-                    probable_size = probable_size + '.0'
-                if isfloat(probable_size):
-                    return probable_size
-
-        elif group == 'word':
-
-            index = (split_string.index('—') if '—' in split_string else split_string.index('---'))
-            right_part = ((' '.join(split_string).split(split_string[index])[1]).split(' '))[1:]
-
-            for el_r_part in right_part[-1::-1]:
-                if len(el_r_part) > 1:
-                    if ',' in el_r_part:
-                        el_r_part.replace(',', '.')
-                    if isfloat(el_r_part):
-                        if el_r_part in sizes:
-                            return el_r_part
-                    if isinteger(el_r_part):
-                        if str(float(el_r_part)) in sizes:
-                            return str(float(el_r_part))
 
     # Инструкция для функции "find_description"
     if group == 'word':
@@ -269,4 +293,6 @@ def find_description(*args, group):
 
         return description
 
+# Test
 
+# print(find_weight('Серьги Серебро 925 0044с-001VMз — 17,5, Кристалл Swarowsky'.split(' ')))

@@ -3,7 +3,7 @@
 в накладных КонтурМаркета и накладных платформы ГИИС ДМДК. """
 
 from time import sleep
-from servise_files import (giisParser, dirParser, matchСhecker, invoiceChanger, excel_parser)
+from servise_files import giisParser, dirParser, matchСhecker, invoiceChanger, invoiceParser
 from inputs import input_giis_file_path, input_invoice_path, input_folder_path, input_id
 from validity import check_outgoing_invoice
 from allFinders import find_uin
@@ -47,7 +47,12 @@ def search_uin():
         return
     else:
         giis_list = giisParser.giis_file_parsing(giis_file_path)
-        find_uin(search_id, giis_list)
+        uin, counter = find_uin(search_id, giis_list)
+        if uin is not None:
+            print(f'\nСовпадение найдено в {counter} строке списка ГИИС .')
+            print(f'для id = {search_id}, UIN = {uin}\n')
+        else:
+            print(f'\nПозиций с id = {search_id} не найдено.\n')
         sleep(3)
         search_uin()
 
@@ -58,7 +63,7 @@ def prepare_an_invoice():
     if str(invoice_path) == '0':
         return
     else:
-        excel_parser.excel_file_parsing(invoice_path)
+        invoiceParser.invoice_parsing(invoice_path)
 
 
 act = ''

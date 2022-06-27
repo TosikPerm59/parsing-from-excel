@@ -2,6 +2,7 @@ import openpyxl
 import warnings
 from allFinders import find_art, find_description, find_weight
 from validity import check_id
+from servise_files import excelReader
 
 warnings.simplefilter("ignore")
 
@@ -26,21 +27,20 @@ def giis_file_parsing(path_to_giis_file):
     и анализируя данные принимает решение о помещении этих данных соответствующим ключам словаря принадлежащего
     текущей позиции.
       Функция возвращает словарь с позициями в которых все характеристики упорядочены и проверены. """
-    path_to_giis_file = path_to_giis_file.replace('"', '')
-    file_giis = openpyxl.open(path_to_giis_file, keep_vba=False)
+
     giis_list = []
-    sheet = file_giis.active
-    sheet.delete_rows(1, 3)
+    rows_list, sheet, file_type, file_name, file_path = excelReader.read_excel_file(path_to_giis_file)
     group = 'excel'
+    rows_list = rows_list[3:]
 
     # Выполняется построчный проход по таблице
-    for row in range(1, sheet.max_row + 1):
+    for row in rows_list:
         uin = sheet[row][1].value
         _id = find_id(sheet[row][2].value, sheet[row][3].value)
         art = find_art(sheet[row][2].value, sheet[row][3].value, group=group)
         descr = find_description(sheet[row][2].value, sheet[row][3].value, sheet[row][5].value,
                                  sheet[row][7].value, group=group)
-        weight = find_weight(sheet[row][4].value, group)
+        weight = find_weight([sheet[row][4].value])
 
         giis_dict = {uin: {}}
         if _id:
