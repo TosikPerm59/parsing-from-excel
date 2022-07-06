@@ -6,7 +6,7 @@ sizes = ['14.0', '14.5', '15.0', '15.5', '16.0', '16.5', '17.0', '17.5', '18.0',
          '40.0', '42.0', '45.0', '50.0', '55.0', '60.0', '65.0', '70.0', '75.0']
 
 # Варианты префиксов артикула изделия относящегося к цепям или браслетам
-keywords = {'цепь': ['цб', 'нц', 'ци'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
+keywords = {'цепь': ['цб', 'нц', 'ци'], 'колье': ['шнурок'], 'браслет': ['бр', 'бк', 'нб', 'бб', 'бв', 'би']}
 
 # Варианты плетений цепей и браслетов
 keywords_weaving = {'перлина': ['шариковая', 'перлина'], 'сингапур': ['сингапур'], 'нонна': ['нонна'],
@@ -15,7 +15,7 @@ keywords_weaving = {'перлина': ['шариковая', 'перлина'], 
 
 # Варианты имен изделий
 keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пуссеты', 'браслет', 'крест', 'икона', 'колье', 'пирсинг',
-                 'моно-серьга']
+                 'моно-серьга', 'ложка']
 
 # Варианты вставок в изделия
 keywords_inserts = {'аметистом': ['аметистом', 'аметист'], 'топазом': ['топазом', 'топаз'],
@@ -37,23 +37,50 @@ def find_barcode(_string):
             return elem
 
 
-def find_uin(search_id, giis_list):
+def find_uin_in_giis_list(_id=None, _list=None, name=None, metal=None, weight=None, art=None):
     counter = 0
     result = None
-    for giis_dict in giis_list:
-        counter += 1
-        for giis_key, giis_values in giis_dict.items():
-            for item_key, item_value in giis_values.items():
-                if 'ID' in item_key:
-                    if search_id == giis_values['ID']:
-                        result = giis_key
-                        return result, counter
+    if check_id(_id):
+        for giis_dict in _list:
+            counter += 1
+            for giis_key, giis_values in giis_dict.items():
+                for item_key, item_value in giis_values.items():
+                    if 'ID' in item_key:
+                        if _id == giis_values['ID']:
+                            result = giis_key
+                            return result, counter
+                if result:
+                    break
             if result:
                 break
-        if result:
-            break
-    if not result:
-        return None, None
+        if result is None:
+            return None, None
+
+    else:
+        similar_products = []
+        identical_products = []
+        for giis_dict in _list:
+            counter += 1
+            for giis_key, giis_values in giis_dict.items():
+                if float(giis_values['Масса'].split(' ')[0]) == weight:
+                    if (float(giis_values['Масса'].split(' ')[0]) == weight and name in giis_values['Описание']
+                            and metal in giis_values['Описание']):
+                        if 'Артикул' in giis_values:
+                            if art == giis_values['Артикул']:
+                                identical_products.append(giis_dict)
+                        else:
+                            similar_products.append(giis_dict)
+        if len(identical_products) > 0:
+            return identical_products
+        else:
+            return similar_products
+
+
+def find_uin_in_string(description):
+    split_string = description.split(' ')
+    for element in split_string:
+        if len(element) == 16 and isinteger(element):
+            return element
 
 
 def find_weight(split_string):
@@ -105,7 +132,7 @@ def find_weight(split_string):
         print(f'Программе не удалось определить вес изделия в строке {original_string}')
         answer = ''
         while not check_weight(answer):
-            answer = input('Пожалуйста укажите вес изделия в формате 0.00: ')
+            answer = input('Укажите вес изделия в формате 0.00: ')
         return answer
 
 
@@ -113,7 +140,7 @@ def find_art(*args, group):
     """ Функция анализирует столбцы Описание и Наименование, находит и проверяет артикул позиции
       Возвращает артикул или None. """
 
-    prefixes = ['НЦ', 'ЦБ', 'ЦИ', 'ББ', 'БВ', 'БИ', 'БК', 'НБ']
+    prefixes = ['НЦ', 'ЦБ', 'ЦИ', 'ББ', 'БВ', 'БИ', 'БК', 'НБ', 'шн2/5т']
 
     for string_from_args in args:
 
@@ -135,6 +162,9 @@ def find_art(*args, group):
                     return ' '.join(art).upper()
 
         for elem in string_from_args:
+            if len(elem) > 1:
+                if elem[-1] == ',':
+                    elem = elem[:-1]
             for pref in prefixes:
                 if pref in elem:
                     return elem.upper()
@@ -201,21 +231,29 @@ def find_size(split_string, group):
      Возвращает вещественное число или None. """
 
     if group == 'excel':
+        _string = ''
+        if 'разм.' in split_string or 'разм' in split_string:
+            size_index = None
+            size_index = split_string.index('разм.') + 1 if 'разм.' in split_string else split_string.index('разм') + 1
+            _string = split_string[size_index]
+        if 'безразмер.' in _string:
+            return 'безразм'
+        if ',' in _string:
+            _string = _string.replace(',', '.')
+        for size in sizes:
+            probable_size = _string.find(size)
+            if probable_size != -1:
+                return size
+        else:
+            for size in sizes:
+                size = str(int(float(size)))
+                probable_size = _string.find(size)
+                if probable_size != -1:
+                    return size + '.0'
         for _string in split_string:
             if _string.startswith('l-'):
                 return _string[2:4] + '.0'
-        if 'разм.' in split_string:
-            size_index = split_string.index('разм.') + 1
-            probable_size = split_string[size_index]
 
-            if probable_size[-1] == ',':
-                probable_size = probable_size[: -1]
-            if ',' in probable_size:
-                probable_size = probable_size.replace(',', '.')
-            if isinteger(probable_size):
-                probable_size = probable_size + '.0'
-            if isfloat(probable_size):
-                return probable_size
 
     elif group == 'word':
 
@@ -227,12 +265,10 @@ def find_size(split_string, group):
             if len(el_r_part) > 1:
                 if ',' in el_r_part:
                     el_r_part.replace(',', '.')
-                if isfloat(el_r_part):
-                    if el_r_part in sizes:
-                        return el_r_part
-                if isinteger(el_r_part):
-                    if str(float(el_r_part)) in sizes:
-                        return str(float(el_r_part))
+                if isfloat(el_r_part) and el_r_part in sizes:
+                    return el_r_part
+                if isinteger(el_r_part) and str(float(el_r_part)) in sizes:
+                    return str(float(el_r_part))
 
 
 def find_description(*args, group):

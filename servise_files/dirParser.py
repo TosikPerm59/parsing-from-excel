@@ -41,24 +41,27 @@ def directory_parsing(path_to_invoices):
     накладным и запускает для каждого подходящего файла парсеры соответствующие формату файла.  """
 
     file_list = []
+    file_dict = {}
     # Проход по файлам указанной директории
-    for root, dirs, files in os.walk(path_to_invoices):
 
-        for file in files:
-            file_dict = {}
+    if check_file_path(path_to_invoices):
+        file_dict[path_to_invoices] = docxParser(path_to_invoices)
+        file_list.append(file_dict)
+    else:
+        for root, dirs, files in os.walk(path_to_invoices):
 
-            if file.startswith('~'):
-                continue
+            for file in files:
 
-            path = path_to_invoices + '\\' + file
+                if file.startswith('~'):
+                    continue
 
-            if check_file_path(path) and file.endswith('.docx'):
-                print(file)
-                file_dict[file] = docxParser(path)
-                file_list.append(file_dict)
+                path = path_to_invoices + '\\' + file
 
-                # if file.endswith('.pdf'):
-                #     file_pdf_dictionary = pdfParser(path_to_invoices, file)
+                if check_file_path(path) and file.endswith('.docx'):
+                    print(file)
+                    file_dict[file] = docxParser(path)
+                    file_list.append(file_dict)
+
     for i in file_list:
         for key, values in i.items():
             print(key)
