@@ -37,7 +37,7 @@ def find_barcode(_string):
             return elem
 
 
-def find_uin_in_giis_list(_id=None, _list=None, name=None, metal=None, weight=None, art=None):
+def find_uin_in_giis_list(_id='', _list='', name='', metal='', weight='', art=''):
     counter = 0
     result = None
     if check_id(_id):
@@ -79,6 +79,8 @@ def find_uin_in_giis_list(_id=None, _list=None, name=None, metal=None, weight=No
 def find_uin_in_string(description):
     split_string = description.split(' ')
     for element in split_string:
+        if ',' in element:
+            element = element.replace(',', '')
         if len(element) == 16 and isinteger(element):
             return element
 
@@ -114,7 +116,7 @@ def find_weight(split_string):
         if elem in sizes:
             print(f'Вес изделия, который определила программа, есть в списке размеров изделий. '
                   f'Вы вы уверены что значение {elem}, находящееся в строке ({original_string}),'
-                  f'дейсвительно является весом изделия?')
+                  f'действительно является весом изделия?')
             answer = input('введите "да", или укажите правильный вес изделия: ')
             if answer == 'да':
                 pass
@@ -172,11 +174,11 @@ def find_art(*args, group):
             if elem.endswith('перлина') and group == 'excel':
                 return elem.replace('перлина', '').upper()
 
-            if ((elem.isdigit() or elem.isalnum()) and 2 < len(elem) != 13 and
+            if ((elem.isdigit() and len(elem) > 3 or elem.isalnum() and not elem.isdigit()) and 2 < len(elem) != 13 and
                     not elem.isalpha() and check_word_exceptions(elem.lower())):
                 return elem.upper()
 
-            if ('-' in elem or '_' in elem) and check_word_exceptions(elem):
+            if ('-' in elem or '_' in elem) and check_word_exceptions(elem) and len(elem) > 3:
                 return elem.upper()
 
 
@@ -197,11 +199,13 @@ def find_name(split_string):
 def find_metal(split_string):
     """ Метод определяющий из какого металла изготовлено изделие.
     Возвращает Название металла с пробой или None. """
-
-    if '585' in split_string or 'золото' in split_string:
-        return 'Золото 585'
-    elif '925' in split_string or 'серебро' in split_string:
-        return 'Серебро 925'
+    if split_string:
+        if '585' in split_string or 'золото' in split_string:
+            return 'Золото 585'
+        elif '925' in split_string or 'серебро' in split_string:
+            return 'Серебро 925'
+    else:
+        return 'unknown'
 
 
 def find_weaving(split_string):
@@ -232,9 +236,14 @@ def find_size(split_string, group):
 
     if group == 'excel':
         _string = ''
+        if 'размер:' in split_string:
+            size_index = split_string.index('размер:') + 1
+            _string = split_string[size_index]
         if 'разм.' in split_string or 'разм' in split_string:
-            size_index = None
             size_index = split_string.index('разм.') + 1 if 'разм.' in split_string else split_string.index('разм') + 1
+            _string = split_string[size_index]
+        if 'р-р' in split_string:
+            size_index = split_string.index('р-р') - 1
             _string = split_string[size_index]
         if 'безразмер.' in _string:
             return 'безразм'
@@ -253,7 +262,14 @@ def find_size(split_string, group):
         for _string in split_string:
             if _string.startswith('l-'):
                 return _string[2:4] + '.0'
-
+            if ' р-р' in _string:
+                _string = _string.replace(' р-р', '')
+                if ' ' in _string:
+                    _string = _string.replace(' ', '')
+                if ',' in _string:
+                    _string = _string.replace(',', '.')
+                if isfloat(_string) and _string in sizes:
+                    return _string
 
     elif group == 'word':
 
@@ -332,3 +348,6 @@ def find_description(*args, group):
 # Test
 
 # print(find_weight('Серьги Серебро 925 0044с-001VMз — 17,5, Кристалл Swarowsky'.split(' ')))
+
+
+# print(find_size('Цепь, Золото 585, плетение - перлина, 45.0 р-р'.split(','), group='excel'))

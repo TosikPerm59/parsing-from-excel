@@ -31,16 +31,18 @@ def giis_file_parsing(path_to_giis_file):
     giis_list = []
     rows_list, sheet, file_type, file_name, file_path = excelReader.read_excel_file(path_to_giis_file)
     group = 'excel'
-    rows_list = rows_list[3:]
+    rows_list = rows_list[4:]
+    counter = 0
 
     # Выполняется построчный проход по таблице
     for row in rows_list:
+        counter += 1
         uin = sheet[row][1].value
-        _id = find_id(sheet[row][2].value, sheet[row][3].value)
-        art = find_art(sheet[row][2].value, sheet[row][3].value, group=group)
-        descr = find_description(sheet[row][2].value, sheet[row][3].value, sheet[row][5].value,
-                                 sheet[row][7].value, group=group)
-        weight = find_weight([sheet[row][4].value])
+        _id = find_id(sheet[row][10].value, sheet[row][11].value)
+        art = find_art(sheet[row][10].value, sheet[row][11].value, group=group)
+        descr = find_description(sheet[row][10].value, sheet[row][11].value, sheet[row][14].value,
+                                 sheet[row][23].value, group=group)
+        weight = find_weight([sheet[row][12].value])
 
         giis_dict = {uin: {}}
         if _id:
@@ -52,13 +54,13 @@ def giis_file_parsing(path_to_giis_file):
         giis_dict[uin]['Масса'] = weight + ' гр'
 
         giis_list.append(giis_dict)
-
+    print(f'Сформирован список изделии файла ГИИС из {counter} позиций')
     return giis_list
 
 
-# Test
+# # Test
 # giis_list = giis_file_parsing("E:\Elena\Downloads\\batches_list.xlsx")
-#
+# #
 # counter = 0
 # for item in giis_list:
 #     counter += 1

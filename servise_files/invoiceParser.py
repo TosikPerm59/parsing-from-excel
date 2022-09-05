@@ -12,14 +12,13 @@ def invoice_parsing(path_to_excel_file):
         = col_with_date = code_ind = prod_barcode_from_giis = None
     new_excel_file = Workbook()
     new_excel_sheet = new_excel_file.active
-    products_with_size = {'кольцо': 'кольца', 'цепь': 'цепи', 'браслет': 'браслета', 'колье': 'колье'}
+    products_with_size = {'кольцо': 'кольца', 'цепь': 'цепи', 'браслет': 'браслета', 'колье': 'колье', 'конго': 'конго'}
     giis_list = giisParser.giis_file_parsing(input_giis_file_path())
     counter = 0
     product_list = []
-    provaiders = {'Степин': '590500827512',
-                  'Белышева': '590202863882',
-                  'Мидас-Пермь': '5904148360',
-                  'Урал-Голд': '5902179700'}
+    provaiders = {'Степин': ['590500827512'],
+                  'Белышева': ['590202863882'],
+                  'Мидас': ['5904148360', '5902179700']}
 
     if file_type == '.xlsx':
         cols = sheet.max_column
@@ -37,7 +36,10 @@ def invoice_parsing(path_to_excel_file):
     for row in full_rows_list:
         counter += 1
         if 'форма по окуд ' in row:
-            row_with_provider_index = counter - 1
+            if 'инн' in row:
+                row_with_provider_index = counter - 1
+            else:
+                row_with_provider_index = counter - 2
         if 'товарная накладная  ' in row or 'товарная накладная ' in row:
             row_with_date_index = counter - 1
         if 'страница 1' in row:
@@ -51,9 +53,12 @@ def invoice_parsing(path_to_excel_file):
     for elem in full_rows_list[row_with_provider_index]:
         if elem is not None:
             row_with_provider.append(elem)
-    for key, value in provaiders.items():
-        if value in ''.join(row_with_provider):
-            provider = key
+    for key, values in provaiders.items():
+        for value in values:
+            if value in ''.join(row_with_provider):
+                provider = key
+                break
+        if provider:
             break
 
     col_with_number = full_rows_list[row_with_date_index - 1].index('номер документа')
@@ -178,6 +183,10 @@ def invoice_parsing(path_to_excel_file):
                 prod_description = f'{prod_description}, уин {prod_uin}'
             prod_description = f'{prod_description}, вес {float(prod_weight)} г.'
 
+            if prod_name is None:
+                print(f'Программе не удалось определить имя изделия в строчке {description_string}.')
+                prod_name = input('Введите название изделия: ')
+
             if prod_name.lower() in products_with_size.keys():
                 if not prod_size:
                     print(f'\nПрограмме не удалось определить размер для {products_with_size[prod_name.lower()]}'
@@ -197,8 +206,8 @@ def invoice_parsing(path_to_excel_file):
             new_excel_sheet['F' + str(counter)] = provider
             new_excel_sheet['G' + str(counter)] = 'шт'
             new_excel_sheet['H' + str(counter)] = '1'
-            new_excel_sheet['I' + str(counter)] = (f'Накладная {invoice_number} '
-                                                   f'от {invoice_date}, {prod_metal}')
+            new_excel_sheet['I' + str(counter)] = f'{invoice_date}'
+            new_excel_sheet['J' + str(counter)] = f'Накладная {invoice_number}, {prod_metal}'
 
         prod_name = prod_metal = prod_inserts = prod_weaving = prod_art = prod_uin = prod_barcode \
             = prod_barcode_from_giis = None

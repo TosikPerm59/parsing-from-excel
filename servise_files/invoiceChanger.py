@@ -28,8 +28,8 @@ def change_invoice(path):
 
     for row in range(3, max_row - 21):
         string = table.rows[row].cells[4].text
-        weight = find_weight(string.lower().split(' '))
         print(f'Поиск веса в строке ({string})')
+        weight = find_weight(string.lower().split(' '))
         total_weight += float(weight)
         amount = (table.rows[row].cells[33].text.split(','))[0]
 
@@ -43,6 +43,8 @@ def change_invoice(path):
 
         cell = table.cell(row, 36)
         price = ''.join(((table.rows[row].cells[40].text.split(','))[0]).split('\xa0'))
+        if price == '':
+            price = ''.join(((table.rows[row].cells[35].text.split(','))[0]).split('\xa0'))
         cell.text = str(round(float(price) / int(amount) / float(weight), 2)).replace('.', ',')
         while len(cell.text.split(',')[1]) < 2:
             cell.text += '0'

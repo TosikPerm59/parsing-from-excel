@@ -46,3 +46,7 @@ def input_id():
     error_print = 'Не корректный id.(id должен состоять из 13 цифр)'
     return while_for_inputs(check_func, descr_print, input_print, error_print)
 
+
+def input_report_kontur():
+    report_kontur = "E:\Elena\Downloads\Отчет по поставкам на 12 августа.xlsx"
+    return report_kontur
