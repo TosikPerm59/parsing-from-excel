@@ -170,4 +170,4 @@ def product_availability_check():  # giis_list, report_kontur):
 
 
 
-product_availability_check()
+# product_availability_check()

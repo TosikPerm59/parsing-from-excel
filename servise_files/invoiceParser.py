@@ -92,8 +92,25 @@ def invoice_parsing(path_to_excel_file):
 
     if file_type == '.xls':
 
-        for row in full_rows_list[start: finish]:
-            if isinstance(row[1], float):
+        for row in full_rows_list[start + 3: finish]:
+            descr = ''
+            row_start_index, row_finish_index = None, None
+            if isinteger(row[1]) or isfloat(row[1]):
+
+                row_start_index = full_rows_list.index(row)
+                for row_2 in full_rows_list[row_start_index + 1: finish]:
+                    if (isinteger(row_2[1]) and int(row_2[1]) == int(row[1]) + 1 or isfloat(row_2[1])
+                            and int(row_2[1]) == int(row[1]) + 1 or 'Итого' in row_2):
+                        row_finish_index = full_rows_list.index(row_2)
+                        break
+
+                for row_3 in full_rows_list[row_start_index: row_finish_index]:
+                    descr += (row_3[2] + ' ' + row_3[12] + ' ').lower()
+                descr = descr.replace('\n', ' ') if '\n' in descr else descr
+                descr = descr.replace('шк:', ' ') if 'шк:' in descr else descr
+                descr = descr.replace('бирка:', ' ') if 'бирка:' in descr else descr
+                descr = descr.replace('  ', ' ') if '  ' in descr else descr
+                row[2] = descr
                 product_list.append(row)
 
     if file_type == '.xlsx':
@@ -128,7 +145,7 @@ def invoice_parsing(path_to_excel_file):
                     prod_barcode = find_barcode(product[code_ind])
 
             if prod_metal is None:
-                if prod_price / prod_weight > 1000:
+                if float(prod_price) / float(prod_weight) > 1000:
                     prod_metal = 'Золото 585'
                 else:
                     prod_metal = 'Серебро 925'
@@ -198,6 +215,9 @@ def invoice_parsing(path_to_excel_file):
             prod_description = f'{prod_description})'
             print(prod_description, prod_barcode)
 
+            """Принты для теста функции"""
+            # print(prod_description, prod_barcode, prod_price, provider)
+
             new_excel_sheet['A' + str(counter)] = prod_description
             new_excel_sheet['B' + str(counter)] = str(prod_barcode)
             new_excel_sheet['C' + str(counter)] = prod_art
@@ -212,9 +232,9 @@ def invoice_parsing(path_to_excel_file):
         prod_name = prod_metal = prod_inserts = prod_weaving = prod_art = prod_uin = prod_barcode \
             = prod_barcode_from_giis = None
 
-    path_for_save = f'{file_path}\\Номенклатура({file_name}).xlsx'
+    path_for_save = f'{file_path}\\Номенклатура для({file_name}).xlsx'
     new_excel_file.save(path_for_save)
 
-
+# Test
 # invoice_parsing(
-#     'E:\Elena\Documents\Документы  Александрова Е.П\Накладные\Входящие накладные\Мидас\\4057 Александрова.xls')
+#     'E:\Elena\Documents\Документы  Александрова Е.П\Накладные\Входящие накладные\Степин Евгений\\05.09.22\965.xls')
