@@ -41,7 +41,7 @@ def isinteger(value):
     try:
         int(value)
         return True
-    except ValueError:
+    except :
         return False
 
 
@@ -75,7 +75,7 @@ def check_word_exceptions(_string):
 
 def check_weight(weight):
     try:
-        if isfloat(weight) and len(weight.split('.')[1]) == 2:
+        if isfloat(weight) and len(str(weight).split('.')[1]) == 2:
             return True
     except IndexError:
         return False

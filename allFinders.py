@@ -127,6 +127,8 @@ def find_weight(split_string):
         if isfloat(elem):
             if len(elem.split('.')[1]) == 1:
                 elem = elem + '0'
+            elif len(elem.split('.')[1]) > 2:
+                elem = round(float(elem), 2)
         if check_weight(elem):
             return elem
 

@@ -51,7 +51,7 @@ def giis_file_parsing(path_to_giis_file):
             giis_dict[uin]['Артикул'] = art
 
         giis_dict[uin]['Описание'] = descr
-        giis_dict[uin]['Масса'] = weight + ' гр'
+        giis_dict[uin]['Масса'] = str(weight) + ' гр'
 
         giis_list.append(giis_dict)
     print(f'Сформирован список изделии файла ГИИС из {counter} позиций')

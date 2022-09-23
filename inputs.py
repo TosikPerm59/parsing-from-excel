@@ -19,7 +19,7 @@ def while_for_inputs(check_func, descr_print, input_print, error_print):
 
 def input_giis_file_path():
     # giis_file_path = input('Укажите путь к файлу, содержащему сведения ГИИС ДМДК: ').replace('"', '')
-    giis_file_path = "E:\Elena\Downloads\\batches_list.xlsx"
+    giis_file_path = "E:\Elena\Downloads\\4_BATCH_LIST_PRINT.xlsx"
     return giis_file_path
 
 

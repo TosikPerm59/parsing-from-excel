@@ -5,6 +5,7 @@
 from time import sleep
 from servise_files import giisParser, dirParser, matchСhecker, invoiceChanger, invoiceParser
 from inputs import input_giis_file_path, input_invoice_path, input_folder_path, input_id
+from servise_files.matchСhecker import product_availability_check
 from validity import check_outgoing_invoice
 from allFinders import find_uin_in_giis_list
 
@@ -66,12 +67,15 @@ def prepare_an_invoice():
         invoiceParser.invoice_parsing(invoice_path)
 
 
+
+
 act = ''
 actions_dict = {'1': ['Редактировать накладную, добавлением в нее цены за грамм и отдельного поля вес',
                       update_outgoing_invoice],
                 '2': ['Найти совпадения изделий в накладных и в базе ГИИС ДМДК', find_matches],
                 '3': ['Найти UIN для изделия из накладной ГИИС', search_uin],
-                '4': ['Подготовить входящую накладную, для загрузки ее в КонтурМаркет', prepare_an_invoice]}
+                '4': ['Подготовить входящую накладную, для загрузки ее в КонтурМаркет', prepare_an_invoice],
+                '5': ['Проверить содержание списка ГИИС в отчете КонтурМаркет', product_availability_check]}
 
 print('\nДобро пожаловать в мастер помощи с документами системы ГИИС ДМДК.')
 

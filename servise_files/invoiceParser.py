@@ -90,32 +90,39 @@ def invoice_parsing(path_to_excel_file):
                     if r_elem.find('код') != -1 or elem.find('код') != -1:
                         code_ind = row.index(origin_elem)
 
-    if file_type == '.xls':
+    for row in full_rows_list[start + 3: finish]:
+        descr = ''
+        row_start_index, row_finish_index = None, None
+        if isinteger(row[1]) or isfloat(row[1]):
 
-        for row in full_rows_list[start + 3: finish]:
-            descr = ''
-            row_start_index, row_finish_index = None, None
-            if isinteger(row[1]) or isfloat(row[1]):
-
-                row_start_index = full_rows_list.index(row)
-                for row_2 in full_rows_list[row_start_index + 1: finish]:
+            row_start_index = full_rows_list.index(row)
+            for row_2 in full_rows_list[row_start_index + 1: finish]:
+                try:
                     if (isinteger(row_2[1]) and int(row_2[1]) == int(row[1]) + 1 or isfloat(row_2[1])
-                            and int(row_2[1]) == int(row[1]) + 1 or 'Итого' in row_2):
+                            and int(row_2[1]) == int(row[1]) + 1 or 'Итого' in row_2 or 'итого ' in row_2):
                         row_finish_index = full_rows_list.index(row_2)
                         break
+                except ValueError:
+                    pass
 
+            if file_type == '.xls':
                 for row_3 in full_rows_list[row_start_index: row_finish_index]:
                     descr += (row_3[2] + ' ' + row_3[12] + ' ').lower()
-                descr = descr.replace('\n', ' ') if '\n' in descr else descr
-                descr = descr.replace('шк:', ' ') if 'шк:' in descr else descr
-                descr = descr.replace('бирка:', ' ') if 'бирка:' in descr else descr
-                descr = descr.replace('  ', ' ') if '  ' in descr else descr
-                row[2] = descr
-                product_list.append(row)
 
-    if file_type == '.xlsx':
+            elif file_type == '.xlsx':
+                for row_3 in full_rows_list[row_start_index: row_finish_index]:
+                    if row_3[6] is None:
+                        row_3[6] = ''
+                    if row_3[2] is None:
+                        row_3[2] = ''
+                    descr += (row_3[2] + ' ' + row_3[6] + ' ').lower()
 
-        product_list = full_rows_list[start + 3: finish]
+            descr = descr.replace('\n', ' ') if '\n' in descr else descr
+            descr = descr.replace('шк:', ' ') if 'шк:' in descr else descr
+            descr = descr.replace('бирка:', ' ') if 'бирка:' in descr else descr
+            descr = descr.replace('  ', ' ') if '  ' in descr else descr
+            row[2] = descr
+            product_list.append(row)
 
     for product in product_list:
         if product[1] is None or not str(product[1]).isdigit():
