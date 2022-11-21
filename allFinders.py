@@ -15,7 +15,7 @@ keywords_weaving = {'перлина': ['шариковая', 'перлина'], 
 
 # Варианты имен изделий
 keywords_name = ['кольцо', 'цепь', 'серьги', 'подвеска', 'пусеты', 'браслет', 'крест', 'икона', 'колье', 'пирсинг',
-                 'моно-серьга', 'ложка']
+                 'моно-серьга', 'ложка', 'пуссеты']
 
 # Варианты вставок в изделия
 keywords_inserts = {'аметистом': ['аметистом', 'аметист'], 'топазом': ['топазом', 'топаз'],
@@ -125,10 +125,12 @@ def find_weight(split_string):
         if isinteger(elem):
             elem = elem + '.00'
         if isfloat(elem):
+            if len(elem.split('.')[1]) > 2:
+                print(elem)
+                elem = str(round(float(elem), ndigits=2))
+                print([elem])
             if len(elem.split('.')[1]) == 1:
                 elem = elem + '0'
-            elif len(elem.split('.')[1]) > 2:
-                elem = round(float(elem), 2)
         if check_weight(elem):
             return elem
 

@@ -7,6 +7,8 @@ from inputs import input_giis_file_path
 def invoice_parsing(path_to_excel_file):
 
     full_rows_list, sheet, file_type, file_name, file_path = excelReader.read_excel_file(path_to_excel_file)
+    for row in full_rows_list:
+        print(row)
     uin_ind = product_ind = weight_ind = price_ind = prod_uin = price_per_gram_ind = start = finish\
         = row_with_provider_index = provider = row_with_date_index = invoice_number = invoice_date = col_with_number \
         = col_with_date = code_ind = prod_barcode_from_giis = None
@@ -32,7 +34,7 @@ def invoice_parsing(path_to_excel_file):
                 row_lst.append(cell_text)
             rows_lst.append(row_lst)
         full_rows_list = rows_lst
-
+    print('step 1')
     for row in full_rows_list:
         counter += 1
         if 'форма по окуд ' in row:
@@ -48,7 +50,7 @@ def invoice_parsing(path_to_excel_file):
             finish = counter - 1
             break
     counter = 0
-
+    print('step 2')
     row_with_provider = []
     for elem in full_rows_list[row_with_provider_index]:
         if elem is not None:
@@ -66,7 +68,7 @@ def invoice_parsing(path_to_excel_file):
     invoice_number = full_rows_list[row_with_date_index][col_with_number]
     invoice_date = full_rows_list[row_with_date_index][col_with_date]
     header = full_rows_list[start: start + 2]
-
+    print('step 3')
     for row in header:
         for elem in row:
             if elem is not None:
@@ -89,13 +91,17 @@ def invoice_parsing(path_to_excel_file):
                 if code_ind is None:
                     if r_elem.find('код') != -1 or elem.find('код') != -1:
                         code_ind = row.index(origin_elem)
-
+    print('step 4')
+    counter = 1
     for row in full_rows_list[start + 3: finish]:
+        print(row)
+
         descr = ''
         row_start_index, row_finish_index = None, None
-        if isinteger(row[1]) or isfloat(row[1]):
+        if isinteger(row[1]) and int(row[1]) == counter or isfloat(row[1]) and int(row[1]) == counter:
 
             row_start_index = full_rows_list.index(row)
+
             for row_2 in full_rows_list[row_start_index + 1: finish]:
                 try:
                     if (isinteger(row_2[1]) and int(row_2[1]) == int(row[1]) + 1 or isfloat(row_2[1])
@@ -106,9 +112,15 @@ def invoice_parsing(path_to_excel_file):
                     pass
 
             if file_type == '.xls':
-                for row_3 in full_rows_list[row_start_index: row_finish_index]:
-                    descr += (row_3[2] + ' ' + row_3[12] + ' ').lower()
+                print('XLS')
+                # print(row_start_index, row_finish_index)
+                # for row_3 in full_rows_list[row_start_index: row_finish_index]:
+                #     descr += (row_3[2] + ' ' + row_3[12] + ' ').lower()
+                    # print(descr)
 
+                product_list.append(row)
+                counter += 1
+                print(row)
             elif file_type == '.xlsx':
                 for row_3 in full_rows_list[row_start_index: row_finish_index]:
                     if row_3[6] is None:
@@ -117,14 +129,19 @@ def invoice_parsing(path_to_excel_file):
                         row_3[2] = ''
                     descr += (row_3[2] + ' ' + row_3[6] + ' ').lower()
 
-            descr = descr.replace('\n', ' ') if '\n' in descr else descr
-            descr = descr.replace('шк:', ' ') if 'шк:' in descr else descr
-            descr = descr.replace('бирка:', ' ') if 'бирка:' in descr else descr
-            descr = descr.replace('  ', ' ') if '  ' in descr else descr
-            row[2] = descr
-            product_list.append(row)
-
+                descr = descr.replace('\n', ' ') if '\n' in descr else descr
+                descr = descr.replace('шк:', ' ') if 'шк:' in descr else descr
+                descr = descr.replace('бирка:', ' ') if 'бирка:' in descr else descr
+                descr = descr.replace('  ', ' ') if '  ' in descr else descr
+                row[2] = descr
+                product_list.append(row)
+                counter += 1
+    print('step 5')
+    print(product_list)
+    # input()
+    counter = 0
     for product in product_list:
+        # print(product)
         if product[1] is None or not str(product[1]).isdigit():
             product[1] = '0'
 

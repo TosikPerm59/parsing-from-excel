@@ -65,7 +65,7 @@ def match_checking(giis_list, invoices_list):
 
 
 def product_availability_check():  # giis_list, report_kontur):
-    kontur_report_path = "E:\Elena\Downloads\Отчет по поставкам на 23 сентября.xlsx"
+    kontur_report_path = "E:\Elena\Downloads\Отчет по поставкам на 17 октября.xlsx"
     giis_file_path = "E:\Elena\Downloads\\4_BATCH_LIST_PRINT.xlsx"
     giis_list = giisParser.giis_file_parsing(giis_file_path)
     giis_dict = {}
